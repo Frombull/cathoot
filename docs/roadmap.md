@@ -30,6 +30,9 @@ Ver [regras-de-negocio.md](regras-de-negocio.md). Testes primeiro.
 - [x] Voto único e imutável, nome único na sessão
 - [x] Veredito por maioria (empate absolve) e "Prisão da Soneca"
 - [x] Validação do gato e geração do código da sala
+- [x] Catálogo de gatos em arquivos (`apps/api/catalog/`: `gatos.yaml` + `<id>.jpg|png`) com leitura validada por testes
+- [ ] Trocar as fotos provisórias do catálogo pelos memes de verdade (feito por você)
+- [ ] Servir as imagens em `/cats/<arquivo>` e `GET /cats`; o Dockerfile da API precisa copiar `catalog/`
 - [ ] Endpoints REST (sessão, gatos, participantes, votos)
 - [ ] Estágio **Integração** (testes da API contra Postgres no Compose)
 

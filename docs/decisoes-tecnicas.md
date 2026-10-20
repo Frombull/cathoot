@@ -14,7 +14,7 @@
 
 - Monorepo único: `apps/web` (Next.js) e `apps/api` (NestJS), com workspace pnpm na raiz.
 - Banco: Postgres hospedado (Neon ou Vercel Postgres) com pooling do Prisma. Docker Compose só para dev local e CI.
-- Imagens dos gatos por **URL** (sem upload).
+- Gatos vêm de um **catálogo em arquivos** (`apps/api/catalog/`), sem upload: um `gatos.yaml` com nome e crime de cada id e uma imagem `<id>.jpg|png` por gato (YAML pela leitura fácil e por aceitar comentários; dependência `yaml`). Tudo versionado no repositório, então não depende de link de meme que some, e o Docker e o E2E usam sempre os mesmos dados. A API é a dona do catálogo e serve as imagens; o `web` só mostra. O domínio ainda aceita imagem por URL `http(s)` para gatos avulsos.
 - Tempo real por **polling** (~1,5 s), sem WebSocket.
 - E2E no Playwright com dois navegadores (apresentador e aluno).
 

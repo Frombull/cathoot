@@ -7,7 +7,7 @@ O app é descartável: o objetivo real é praticar e testar um pipeline de CI/CD
 
 O **Cathoot** (nome definido em 2026-10-06) é o "Kahoot de tribunal de gato".
 
-Cadastra-se um gato (nome, imagem meme e o "crime" cometido) e a turma vota **Culpado** ou **Inocente**.
+Cada gato do catálogo tem nome, imagem meme e o "crime" cometido (arquivos em `apps/api/catalog/`), e a turma vota **Culpado** ou **Inocente**.
 
 Será usado numa votação em sala de aula na apresentação, então precisa ser divertido e funcionar bem com muita gente votando ao mesmo tempo.
 
