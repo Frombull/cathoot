@@ -26,9 +26,10 @@ Plano geral das próximas etapas, em ordem. Marcar como feito (`[x]`) ao conclui
 
 Ver [regras-de-negocio.md](regras-de-negocio.md). Testes primeiro.
 
-- [ ] Máquina de estados da sessão (`LOBBY → VOTANDO → RESULTADO → … → FIM`)
-- [ ] Voto único e imutável, nome único na sessão
-- [ ] Veredito ao atingir o limite de votos e "Prisão da Soneca"
+- [x] Máquina de estados da sessão (`LOBBY → VOTANDO → RESULTADO → … → FIM`), em memória
+- [x] Voto único e imutável, nome único na sessão
+- [x] Veredito por maioria (empate absolve) e "Prisão da Soneca"
+- [x] Validação do gato e geração do código da sala
 - [ ] Endpoints REST (sessão, gatos, participantes, votos)
 - [ ] Estágio **Integração** (testes da API contra Postgres no Compose)
 
