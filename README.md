@@ -20,16 +20,19 @@ Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
 pnpm install
 pnpm --filter web dev               # desenvolvimento, em http://localhost:3000
 
-docker compose up --build           # aplicação completa em containers
+docker compose up -d --build        # aplicação completa em containers
 ```
 
 ## Jenkins local
 
+Sobe junto com o app, no mesmo `docker compose up -d`, se o perfil `jenkins` estiver ligado:
+
 ```bash
+cp .env.example .env                   # liga o perfil jenkins
 cp jenkins/.env.example jenkins/.env   # preencher senha e token do GitHub
-docker compose -f jenkins/docker-compose.yml up -d --build
+docker compose up -d --build
 ```
 
-Abre em <http://localhost:8080> (usuário `admin`), já com o job `cathoot` criado. Detalhes em [docs/pipeline.md](docs/pipeline.md).
+Abre em <http://localhost:8080> (usuário `admin`), já com o job `cathoot` criado. Sem esses `.env`, o compose sobe só o app. Detalhes em [docs/pipeline.md](docs/pipeline.md).
 
 #### Marco Di Toro | 150 | GES

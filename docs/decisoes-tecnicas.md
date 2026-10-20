@@ -33,7 +33,7 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 - `apps/web/Dockerfile` é multi-stage e usa a saída `standalone` do Next, então a imagem final não leva pnpm nem código-fonte. O contexto do build é a raiz do monorepo, por causa do lockfile e do workspace.
 - O healthcheck fica no compose e usa `node` + `fetch`, porque a imagem slim não tem curl.
 - `WEB_PORT` define a porta publicada (padrão 3000). Com `0`, o Docker escolhe uma porta livre (usado no CI).
-- O Jenkins tem o próprio compose em `jenkins/` (ver [pipeline.md](pipeline.md)).
+- O Jenkins é um serviço em `jenkins/docker-compose.yml`, incluído pelo compose da raiz com `profiles: ["jenkins"]` (ver [pipeline.md](pipeline.md)). Só sobe com `COMPOSE_PROFILES=jenkins` no `.env` da raiz.
 
 ## Deploy na Vercel
 

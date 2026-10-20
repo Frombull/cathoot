@@ -20,13 +20,16 @@ Tudo em [`jenkins/`](../jenkins/), configurado como código:
 - `Dockerfile`: Jenkins LTS + Node 24 (pnpm via `corepack enable`) + Docker CLI com compose e buildx.
 - `plugins.txt`: plugins instalados no build da imagem.
 - `casc.yaml` (Configuration as Code): usuário `admin`, credencial do GitHub e o job Multibranch `cathoot` (via Job DSL). Mudanças feitas pela UI se perdem no restart.
-- `docker-compose.yml`: sobe o Jenkins na porta 8080 com o socket do Docker do host montado (os builds usam o Docker do host).
+- `docker-compose.yml`: o serviço do Jenkins, incluído pelo compose da raiz (`include`). Porta 8080, com o socket do Docker do host montado (os builds usam o Docker do host).
 
 ```bash
+cp .env.example .env                   # COMPOSE_PROFILES=jenkins
 cp jenkins/.env.example jenkins/.env   # preencher senha e token do GitHub
-docker compose -f jenkins/docker-compose.yml up -d --build
+docker compose up -d --build           # sobe o app e o Jenkins
 # http://localhost:8080 (usuário admin)
 ```
+
+O serviço tem `profiles: ["jenkins"]`: só sobe se `COMPOSE_PROFILES=jenkins` (no `.env` da raiz) ou `--profile jenkins`. Isso é essencial para o CI: dentro do Jenkins não há `.env`, então o `docker compose` dos builds ignora o serviço e nunca tenta subir outro Jenkins.
 
 - Os builds rodam no próprio controller (`agent any`), sem agentes separados.
 - Cada build usa um projeto do compose próprio (`COMPOSE_PROJECT_NAME`) e porta aleatória (`WEB_PORT=0`), então builds de branches diferentes não colidem.

@@ -1,5 +1,8 @@
 name: cathoot
 
+include:
+  - jenkins/docker-compose.yml
+
 services:
   web:
     build:
