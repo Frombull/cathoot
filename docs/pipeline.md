@@ -16,6 +16,8 @@ Os próximos estágios (integração, E2E e deploy) estão no [roadmap](roadmap.
 
 ## Jenkins local (Docker Compose)
 
+O professor proibiu o GitHub Actions: o GitHub só guarda o código e o Jenkins faz todo o CI/CD. Por isso o Jenkins roda no notebook, em container, configurado por código. Em produção real ele ficaria num servidor sempre ligado, com webhook e agentes separados. Ponto em aberto: a Vercel também faz deploy automático pela integração com o Git; perguntar ao professor se isso vale ou se o deploy deve ir para um estágio do Jenkins (ver [arquitetura.md](arquitetura.md)).
+
 Tudo em [`jenkins/`](../jenkins/), configurado como código:
 
 - `Dockerfile`: Jenkins LTS + Node 24 (pnpm via `corepack enable`) + Docker CLI com compose e buildx.
