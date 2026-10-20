@@ -11,7 +11,7 @@ Implementados no [`Jenkinsfile`](../Jenkinsfile):
 
 Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm build`) rodam com `pnpm -r`, então a `apps/api` entra nos estágios sozinha quando tiver os mesmos scripts.
 
-Previstos: testes unitários → testes de integração (Postgres no Compose) → E2E (Playwright) → deploy.
+Os próximos estágios (testes unitários, integração, E2E e deploy) estão no [roadmap](roadmap.md).
 
 ## Jenkins local (Docker Compose)
 
@@ -36,10 +36,5 @@ docker compose -f jenkins/docker-compose.yml up -d --build
 - Multibranch Pipeline descobre todas as branches com `Jenkinsfile` (`dev`, `master` e as de feature).
 - **Sem webhook**: o GitHub não alcança o `localhost`. O Jenkins verifica o repositório a cada minuto (*periodic scan*). Para webhook de verdade, expor o Jenkins com ngrok ou smee.io.
 - O token (fine-grained, só este repo) precisa de *Contents: read*, *Metadata: read* e *Commit statuses: read and write*.
-- O Jenkins devolve o status `continuous-integration/jenkins/branch` no commit. O PR `dev` → `master` mostra esse status porque o head do PR é o commit da `dev`.
-- O `continuous-integration/jenkins/branch` é check obrigatório da `master` (ver [branches.md](branches.md)).
-
-## Pendente
-
-- Relatórios JUnit/HTML do Playwright publicados no Jenkins.
-- Estágio de deploy (só `master`): Vercel CLI ou só a integração Git da Vercel.
+- O Jenkins devolve o status `continuous-integration/jenkins/branch` no commit.
+- Esse status é check obrigatório da `master` (ver [branches.md](branches.md)).

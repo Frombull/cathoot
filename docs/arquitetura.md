@@ -1,9 +1,11 @@
+# Arquitetura
+
 ## Aplicação
 
 ```mermaid
 flowchart LR
     APR["Apresentador<br/>(senha + QR code)"]
-    ALU["Alunos<br/>(entram pelo QR, só nome)"]
+    ALU["Alunos<br/>(QR ou código da sala, só nome)"]
     WEB["apps/web<br/>Next.js + shadcn/ui"]
     API["apps/api (virá depois)<br/>NestJS + Prisma"]
     DB[("PostgreSQL")]
@@ -38,9 +40,5 @@ flowchart LR
     MASTER --> S6
 ```
 
-- Os estágios seguem a ordem prevista em [pipeline.md](pipeline.md). Já existem Install, Lint + types, Build e Docker.
-- Install = checkout + `pnpm install --frozen-lockfile` (o `corepack enable` fica na imagem do Jenkins). Integração sobe o Postgres no Docker Compose. O E2E cobre apresentador + aluno.
-- O Jenkins roda em Docker Compose ([`jenkins/`](../jenkins/)), configurado como código (JCasC + Job DSL), e usa o Docker do host pelo socket.
-- O Jenkins devolve ao GitHub o status `continuous-integration/jenkins/branch`. A `master` só aceita PR com os checks `Vercel` e do Jenkins passando e a branch atualizada, conforme [branches.md](branches.md).
-- O `ignoreCommand` em `apps/web/vercel.json` evita deploy quando só mudam arquivos `.md` ou fora de `apps/web`.
-- Se o deploy será disparado pelo Jenkins (Vercel CLI) ou só pela integração Git da Vercel: a definir.
+- Estágios, Jenkins local e integração com o GitHub: [pipeline.md](pipeline.md). Proteções da `master`: [branches.md](branches.md).
+- Quem dispara o deploy (Jenkins com Vercel CLI ou só a integração Git da Vercel): a definir.

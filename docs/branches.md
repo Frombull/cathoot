@@ -14,4 +14,5 @@ Commits **direto na `dev`** → PR `dev` → `master`. A `master` é o que vai p
   - O check do Jenkins só chega com o Jenkins local ligado; desligado, nenhum PR fica mergeável.
   - Sem push direto, force push nem deleção.
 - **`dev`**: push direto liberado, sem check obrigatório. Só bloqueia force push e deleção.
+- Mensagens de commit no estilo Conventional Commits (`feat:`, `fix:`, `docs:`...).
 - Sem exigência de aprovação de review (repo individual). Subir para 1 aprovação se mais gente entrar.

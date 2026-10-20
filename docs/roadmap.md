@@ -2,7 +2,7 @@
 
 Plano geral das próximas etapas, em ordem. Marcar como feito (`[x]`) ao concluir.
 
-**Requisito do professor:** cada parte tem seu Dockerfile (front, back, ...) e a aplicação inteira sobe com `docker compose up --build`. Hoje: front e Jenkins prontos; back e banco entram na etapa 2.
+**Requisito do professor:** cada parte tem seu Dockerfile (front, back, ...) e a aplicação inteira sobe com `docker compose up --build`.
 
 ## 1. Pipeline base
 

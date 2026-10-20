@@ -5,15 +5,13 @@ O app é descartável: o objetivo real é praticar e testar um pipeline de CI/CD
 
 ## O que é o Cathoot
 
-O **Cathoot** (nome definido em 2026-10-06) é o "Kahoot de tribunal de gato". Ideia escolhida em 2026-10-05; o conceito original era "Tribunal dos Gatos".
+O **Cathoot** (nome definido em 2026-10-06) é o "Kahoot de tribunal de gato".
 
 Cadastra-se um gato (nome, imagem meme e o "crime" cometido) e a turma vota **Culpado** ou **Inocente**.
 
 Será usado numa votação em sala de aula na apresentação, então precisa ser divertido e funcionar bem com muita gente votando ao mesmo tempo.
 
 ## Fluxo do jogo
-
-Formato "Kahoot de Tribunal de Gato", decidido em 2026-10-05. Simples e divertido.
 
 1. O apresentador (painel protegido por senha simples) cria uma sessão e mostra um QR code com o código da sala.
 2. A turma entra pelo QR code ou digitando o código curto da sala na landing, digita só o nome e espera no lobby.
@@ -27,12 +25,3 @@ Fluxo E2E principal: cadastrar gato → votar → ver o veredito.
 
 - Manter o app pequeno e simples (um CRUD basta).
 - Priorizar o que ajuda o pipeline: builds reproduzíveis, testes rápidos, imagens Docker e estágios claros.
-
-## Outros documentos
-
-- [regras-de-negocio.md](regras-de-negocio.md)
-- [decisoes-tecnicas.md](decisoes-tecnicas.md)
-- [visual.md](visual.md)
-- [pipeline.md](pipeline.md)
-- [branches.md](branches.md)
-- [ideias.md](ideias.md)
