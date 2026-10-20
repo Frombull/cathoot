@@ -1,0 +1,23 @@
+name: cathoot-jenkins
+
+services:
+  jenkins:
+    build: .
+    image: cathoot-jenkins
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:?defina JENKINS_ADMIN_PASSWORD em jenkins/.env}
+      GITHUB_USER: ${GITHUB_USER:?defina GITHUB_USER em jenkins/.env}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:?defina GITHUB_TOKEN em jenkins/.env}
+    # GID do dono do socket do Docker (0 no Mac; no Linux, o do grupo docker)
+    group_add:
+      - "${DOCKER_GID:-0}"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./casc.yaml:/var/jenkins_conf/casc.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  jenkins_home:

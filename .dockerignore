@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/.env*
+**/*.tsbuildinfo
+**/next-env.d.ts
+.git
+docs
+jenkins
+UI Ideas
+*.md
