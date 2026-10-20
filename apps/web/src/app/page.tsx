@@ -1,68 +1,121 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Gavel, PawPrint, Plus, Users } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Wordmark } from "@/components/wordmark";
+
+const destaques = [
+  { icon: PawPrint, titulo: "Casos reais", detalhe: "(e alguns nem tanto)" },
+  { icon: Gavel, titulo: "Decida o destino", detalhe: "dos gatos" },
+  { icon: Users, titulo: "Jogue com a turma", detalhe: "toda de uma vez" },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="relative flex flex-1 flex-col overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_40rem_at_85%_10%,var(--glow),transparent_70%)]"
+      />
+
+      <header className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+        <Link href="/" className="text-4xl sm:text-5xl">
+          <Wordmark />
+        </Link>
+        <nav className="flex items-center gap-2 sm:gap-4">
+          <a
+            href="#como-jogar"
+            className="hidden px-3 font-display text-lg font-medium text-foreground/80 transition hover:text-foreground sm:block"
+          >
+            Como jogar
+          </a>
+          <ThemeToggle />
+        </nav>
+      </header>
+
+      <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center gap-12 px-5 pb-16 pt-8 sm:px-8 md:grid md:grid-cols-2 md:items-center md:gap-8 md:py-12">
+        <section className="motion-safe:animate-rise">
+          <p className="mb-4 inline-block rounded-full bg-accent px-4 py-1 font-display text-sm font-semibold text-accent-foreground">
+            O kahoot de tribunal de crime de gatos!
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <h1 className="font-display text-5xl font-bold leading-[1.05] sm:text-6xl lg:text-7xl">
+            Teste seu conhecimento.{" "}
+            <span className="text-primary">Julgue gatos.</span>
+          </h1>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">
+            Em Cathoot, você é o juiz. Veja os casos, analise as provas e decida
+            o destino dos nossos (nem tão) inocentes felinos.
+          </p>
+          <div className="mt-8 flex flex-col items-start gap-4">
+            <Link
+              href="/criar"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-display text-xl font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition hover:-rotate-2 hover:scale-105"
+            >
+              <Plus className="size-6" strokeWidth={3} />
+              Criar sala
+            </Link>
+
+            <div className="flex items-center gap-4">
+              <span className="font-display text-lg text-muted-foreground">ou</span>
+
+              {/* Sem JS também funciona: vai para /entrar?codigo=XXXXXX (o QR code leva ao mesmo endereço) */}
+              <form
+                action="/entrar"
+                className="flex items-center rounded-full border-2 border-border bg-card p-1.5 transition focus-within:border-primary"
+              >
+                <input
+                  name="codigo"
+                  required
+                  maxLength={6}
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  aria-label="Código da sala"
+                  placeholder="Código da sala"
+                  className="w-40 bg-transparent px-4 font-display text-lg font-semibold uppercase tracking-widest text-foreground outline-none placeholder:font-medium placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 font-display text-lg font-semibold text-accent-foreground transition hover:scale-105"
+                >
+                  Entrar
+                  <ArrowRight className="size-5" strokeWidth={2.5} />
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <ul id="como-jogar" className="mt-12 flex flex-wrap gap-x-6 gap-y-5">
+            {destaques.map(({ icon: Icon, titulo, detalhe }) => (
+              <li key={titulo} className="flex items-center gap-3">
+                <Icon className="size-7 text-accent" strokeWidth={2.2} />
+                <span className="text-sm leading-tight text-muted-foreground">
+                  <strong className="block font-display text-base font-semibold text-foreground">
+                    {titulo}
+                  </strong>
+                  {detalhe}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="relative mx-auto w-full max-w-md md:max-w-none motion-safe:animate-rise [animation-delay:150ms]">
+          <div className="overflow-hidden rounded-4xl border-4 border-card shadow-2xl shadow-primary/25">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src="/hero-juiz.jpg"
+              alt="Um gato juiz de toga, bravo, segurando um martelo atrás do balcão do tribunal"
+              width={480}
+              height={390}
+              preload
+              sizes="(min-width: 768px) 520px, 90vw"
+              className="h-auto w-full"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          </div>
+          <span className="absolute -bottom-5 -left-3 -rotate-6 rounded-2xl bg-accent px-5 py-2 font-display text-2xl font-bold text-accent-foreground shadow-lg motion-safe:animate-bob">
+            Culpado?
+          </span>
+        </section>
       </main>
     </div>
   );
