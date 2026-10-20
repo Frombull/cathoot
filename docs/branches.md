@@ -9,8 +9,9 @@ Commits **direto na `dev`** → PR `dev` → `master`. A `master` é o que vai p
 ## Proteções no GitHub
 
 - **`master`**: protegida (vale também para o admin).
-  - Só entra por PR, com o check **`Vercel`** passando e a branch atualizada antes do merge.
+  - Só entra por PR, com os checks **`Vercel`** e **`continuous-integration/jenkins/branch`** passando e a branch atualizada antes do merge.
   - O check `Vercel` fica `success` mesmo quando o `ignoreCommand` cancela o build.
+  - O check do Jenkins só chega com o Jenkins local ligado; desligado, nenhum PR fica mergeável.
   - Sem push direto, force push nem deleção.
 - **`dev`**: push direto liberado, sem check obrigatório. Só bloqueia force push e deleção.
 - Sem exigência de aprovação de review (repo individual). Subir para 1 aprovação se mais gente entrar.

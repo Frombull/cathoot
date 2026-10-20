@@ -7,8 +7,8 @@ Plano geral das próximas etapas, em ordem. Marcar como feito (`[x]`) ao conclui
 - [x] Docker Compose do app (`docker-compose.yml`, `apps/web/Dockerfile`)
 - [x] Jenkins local configurado por código (`jenkins/`)
 - [x] `Jenkinsfile`: Install, Lint + types, Build, Docker
-- [ ] Push na `dev` e primeiro build verde no GitHub (token em `jenkins/.env`)
-- [ ] Adicionar `continuous-integration/jenkins/branch` aos checks obrigatórios da `master`
+- [x] Push na `dev` e primeiro build verde no GitHub (token em `jenkins/.env`)
+- [x] Adicionar `continuous-integration/jenkins/branch` aos checks obrigatórios da `master`
 
 ## 2. API (`apps/api`)
 

@@ -37,7 +37,7 @@ docker compose -f jenkins/docker-compose.yml up -d --build
 - **Sem webhook**: o GitHub não alcança o `localhost`. O Jenkins verifica o repositório a cada minuto (*periodic scan*). Para webhook de verdade, expor o Jenkins com ngrok ou smee.io.
 - O token (fine-grained, só este repo) precisa de *Contents: read*, *Metadata: read* e *Commit statuses: read and write*.
 - O Jenkins devolve o status `continuous-integration/jenkins/branch` no commit. O PR `dev` → `master` mostra esse status porque o head do PR é o commit da `dev`.
-- Quando o pipeline estiver rodando na `dev`, adicionar `continuous-integration/jenkins/branch` aos checks obrigatórios da `master` (ver [branches.md](branches.md)).
+- O `continuous-integration/jenkins/branch` é check obrigatório da `master` (ver [branches.md](branches.md)).
 
 ## Pendente
 
