@@ -10,6 +10,9 @@
     "yarn": "please-use-pnpm"
   },
   "scripts": {
-    "preinstall": "npx --yes only-allow pnpm"
+    "preinstall": "npx --yes only-allow pnpm",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build"
   }
 }

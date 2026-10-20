@@ -24,11 +24,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    GH["GitHub<br/>(commit na dev / PR para master)"] -->|"webhook"| JK["Jenkins<br/>Multibranch Pipeline"]
+    GH["GitHub<br/>(commit na dev / PR para master)"] -->|"periodic scan (1 min)"| JK["Jenkins local<br/>(Docker Compose)<br/>Multibranch Pipeline"]
 
     subgraph Stages["Estágios do Jenkinsfile"]
         direction LR
-        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários"] --> S3["Build"] --> S4["Integração<br/>(Postgres)"] --> S5["E2E Playwright"] --> S6["Deploy<br/>(só master)"]
+        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários"] --> S3["Build"] --> SD["Docker<br/>(compose build + smoke)"] --> S4["Integração<br/>(Postgres)"] --> S5["E2E Playwright"] --> S6["Deploy<br/>(só master)"]
     end
 
     JK --> S0
@@ -36,8 +36,9 @@ flowchart LR
     JK -->|"status do build"| GH
 ```
 
-- Os estágios seguem a ordem prevista em [pipeline.md](pipeline.md).
-- Install = checkout + `corepack enable` + `pnpm install --frozen-lockfile`. Integração sobe o Postgres no Docker Compose. O E2E cobre apresentador + aluno.
+- Os estágios seguem a ordem prevista em [pipeline.md](pipeline.md). Já existem Install, Lint + types, Build e Docker.
+- Install = checkout + `pnpm install --frozen-lockfile` (o `corepack enable` fica na imagem do Jenkins). Integração sobe o Postgres no Docker Compose. O E2E cobre apresentador + aluno.
+- O Jenkins roda em Docker Compose ([`jenkins/`](../jenkins/)), configurado como código (JCasC + Job DSL), e usa o Docker do host pelo socket.
 - O Jenkins devolve ao GitHub o status `continuous-integration/jenkins/branch`. A `master` só aceita PR com os checks `Vercel` e (quando existir) o do Jenkins passando, conforme [branches.md](branches.md).
 - O `ignoreCommand` em `apps/web/vercel.json` evita deploy quando só mudam arquivos `.md` ou fora de `apps/web`.
 - Se o deploy será disparado pelo Jenkins (Vercel CLI) ou só pela integração Git da Vercel: a definir.

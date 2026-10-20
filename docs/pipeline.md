@@ -1,13 +1,45 @@
 # Pipeline (Jenkins)
 
-## Estágios previstos
+## Estágios
 
-lint e type-check → testes unitários → build → testes de integração (Postgres no Compose) → E2E (Playwright) → deploy.
+Implementados no [`Jenkinsfile`](../Jenkinsfile):
 
-## Notas
+1. **Install**: `pnpm install --frozen-lockfile`.
+2. **Lint + types**: `pnpm lint` e `pnpm typecheck` (`next typegen && tsc --noEmit` no web).
+3. **Build**: `pnpm build`.
+4. **Docker**: `docker compose build` e `docker compose up -d --wait`. O `--wait` só retorna quando o healthcheck passa, então serve de smoke test da imagem. No fim, `down --rmi local` limpa tudo.
 
-- Multibranch Pipeline cobre `dev`, `master` e PRs.
-- Webhook do GitHub dispara o build.
-- Quando o Jenkins existir, adicionar o contexto dele (ex.: `continuous-integration/jenkins/branch`) aos checks obrigatórios da `master`.
+Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm build`) rodam com `pnpm -r`, então a `apps/api` entra nos estágios sozinha quando tiver os mesmos scripts.
+
+Previstos: testes unitários → testes de integração (Postgres no Compose) → E2E (Playwright) → deploy.
+
+## Jenkins local (Docker Compose)
+
+Tudo em [`jenkins/`](../jenkins/), configurado como código:
+
+- `Dockerfile`: Jenkins LTS + Node 24 (pnpm via `corepack enable`) + Docker CLI com compose e buildx.
+- `plugins.txt`: plugins instalados no build da imagem.
+- `casc.yaml` (Configuration as Code): usuário `admin`, credencial do GitHub e o job Multibranch `cathoot` (via Job DSL). Mudanças feitas pela UI se perdem no restart.
+- `docker-compose.yml`: sobe o Jenkins na porta 8080 com o socket do Docker do host montado (os builds usam o Docker do host).
+
+```bash
+cp jenkins/.env.example jenkins/.env   # preencher senha e token do GitHub
+docker compose -f jenkins/docker-compose.yml up -d --build
+# http://localhost:8080 (usuário admin)
+```
+
+- Os builds rodam no próprio controller (`agent any`), sem agentes separados.
+- Cada build usa um projeto do compose próprio (`COMPOSE_PROJECT_NAME`) e porta aleatória (`WEB_PORT=0`), então builds de branches diferentes não colidem.
+
+## GitHub
+
+- Multibranch Pipeline descobre todas as branches com `Jenkinsfile` (`dev`, `master` e as de feature).
+- **Sem webhook**: o GitHub não alcança o `localhost`. O Jenkins verifica o repositório a cada minuto (*periodic scan*). Para webhook de verdade, expor o Jenkins com ngrok ou smee.io.
+- O token (fine-grained, só este repo) precisa de *Contents: read*, *Metadata: read* e *Commit statuses: read and write*.
+- O Jenkins devolve o status `continuous-integration/jenkins/branch` no commit. O PR `dev` → `master` mostra esse status porque o head do PR é o commit da `dev`.
+- Quando o pipeline estiver rodando na `dev`, adicionar `continuous-integration/jenkins/branch` aos checks obrigatórios da `master` (ver [branches.md](branches.md)).
+
+## Pendente
+
 - Relatórios JUnit/HTML do Playwright publicados no Jenkins.
-- Instalação com `pnpm install --frozen-lockfile` (ver [decisoes-tecnicas.md](decisoes-tecnicas.md)).
+- Estágio de deploy (só `master`): Vercel CLI ou só a integração Git da Vercel.

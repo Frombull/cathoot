@@ -25,6 +25,15 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 - Travado por `packageManager` e `engines` no `package.json`, `engine-strict=true` no `.npmrc` e `preinstall: only-allow pnpm`.
 - No Jenkins e nos Dockerfiles, ativar via `corepack enable` para usar a versão fixada em `packageManager`.
 - Commitar o `pnpm-lock.yaml` e instalar no CI com `pnpm install --frozen-lockfile`.
+- As imagens usam **Node 24** (LTS ativo), que ainda traz o corepack. A partir do Node 25 o corepack não vem mais junto, então localmente o pnpm precisa estar instalado à parte.
+
+## Docker
+
+- `docker-compose.yml` na raiz sobe a aplicação inteira (`docker compose up --build`). Hoje só tem o `web`; a API e o Postgres entram nele quando existirem.
+- `apps/web/Dockerfile` é multi-stage. O contexto é a raiz do monorepo, por causa do lockfile e do workspace. O Next gera a saída `standalone` (`output: "standalone"` no `next.config.ts`), e a imagem final só leva o `server.js`, os estáticos e o `node_modules` rastreado, sem pnpm nem código-fonte.
+- O healthcheck do serviço fica no compose e usa `node` + `fetch`, porque a imagem slim não tem curl.
+- `WEB_PORT` define a porta publicada (padrão 3000). Com `0`, o Docker escolhe uma porta livre (usado no CI).
+- O Jenkins tem o próprio compose em `jenkins/` (ver [pipeline.md](pipeline.md)).
 
 ## Deploy na Vercel
 

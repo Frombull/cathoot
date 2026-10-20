@@ -1,0 +1,63 @@
+jenkins:
+  systemMessage: "Jenkins do Cathoot (S107). Configurado por jenkins/casc.yaml."
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "github"
+              description: "Token do GitHub"
+              username: "${GITHUB_USER}"
+              password: "${GITHUB_TOKEN}"
+
+# Sem webhook (o GitHub não alcança o localhost): scan do repositório a cada minuto
+jobs:
+  - script: |
+      multibranchPipelineJob('cathoot') {
+        displayName('Cathoot')
+        branchSources {
+          branchSource {
+            source {
+              github {
+                id('cathoot-github')
+                repoOwner('Frombull')
+                repository('cathoot')
+                repositoryUrl('https://github.com/Frombull/cathoot')
+                configuredByUrl(true)
+                credentialsId('github')
+                traits {
+                  gitHubBranchDiscovery {
+                    strategyId(3) // todas as branches
+                  }
+                }
+              }
+            }
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(5)
+          }
+        }
+        triggers {
+          periodicFolderTrigger {
+            interval('1m')
+          }
+        }
+      }
