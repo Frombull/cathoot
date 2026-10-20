@@ -16,7 +16,7 @@ Será usado numa votação em sala de aula na apresentação, então precisa ser
 Formato "Kahoot de Tribunal de Gato", decidido em 2026-10-05. Simples e divertido.
 
 1. O apresentador (painel protegido por senha simples) cria uma sessão e mostra um QR code com o código da sala.
-2. A turma entra pelo QR, digita só o nome e espera no lobby.
+2. A turma entra pelo QR code ou digitando o código curto da sala na landing, digita só o nome e espera no lobby.
 3. O apresentador clica em "Próximo": aparece o gato com o crime, e os alunos votam.
 4. O apresentador clica em "Revelar": todos veem o placar e o veredito. Depois vem o próximo gato.
 5. No fim, um resumo (gato mais culpado etc.).

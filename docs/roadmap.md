@@ -2,6 +2,8 @@
 
 Plano geral das próximas etapas, em ordem. Marcar como feito (`[x]`) ao concluir.
 
+**Requisito do professor:** cada parte tem seu Dockerfile (front, back, ...) e a aplicação inteira sobe com `docker compose up --build`. Hoje: front e Jenkins prontos; back e banco entram na etapa 2.
+
 ## 1. Pipeline base
 
 - [x] Docker Compose do app (`docker-compose.yml`, `apps/web/Dockerfile`)
@@ -13,7 +15,9 @@ Plano geral das próximas etapas, em ordem. Marcar como feito (`[x]`) ao conclui
 ## 2. API (`apps/api`)
 
 - [ ] Esqueleto NestJS + Prisma
-- [ ] Serviços `api` e `postgres` no `docker-compose.yml` (volume + healthcheck)
+- [ ] `apps/api/Dockerfile` (multi-stage, como o do web)
+- [ ] Serviços `api` e `postgres` no `docker-compose.yml` (volume + healthcheck + `depends_on`), para `docker compose up --build` subir tudo
+- [ ] `.env.example` com as variáveis (banco, senha do apresentador)
 - [ ] Modelo de dados: `Session`, `Cat`, `Participant`, `Vote`
 - [ ] Vitest configurado + estágio **Testes unitários** no Jenkinsfile
 
@@ -31,7 +35,11 @@ Ver [regras-de-negocio.md](regras-de-negocio.md). Testes primeiro.
 
 Ver [visual.md](visual.md) e [visao.md](visao.md).
 
-- [ ] Escolher fontes e instalar shadcn/ui
+- [x] Escolher fontes e temas claro/escuro
+- [x] Landing page (`/`): botão "Criar sala" e campo de código da sala (só front; `/criar` e `/entrar` ainda não existem)
+- [ ] Tela `/criar` (senha do apresentador) e `/entrar` (código + nome)
+- [ ] Instalar shadcn/ui
+- [ ] Vitest no `web` + estágio **Testes unitários**
 - [ ] Apresentador: senha, criar sessão, QR code, "Próximo" e "Revelar"
 - [ ] Aluno: entrar com nome, votar, ver o veredito
 - [ ] Polling (~1,5 s) para atualizar as telas
