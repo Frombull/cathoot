@@ -14,12 +14,13 @@ Plano geral das próximas etapas, em ordem. Marcar como feito (`[x]`) ao conclui
 
 ## 2. API (`apps/api`)
 
-- [ ] Esqueleto NestJS + Prisma
+- [x] Esqueleto NestJS (`GET /health`)
+- [ ] Prisma
 - [ ] `apps/api/Dockerfile` (multi-stage, como o do web)
 - [ ] Serviços `api` e `postgres` no `docker-compose.yml` (volume + healthcheck + `depends_on`), para `docker compose up --build` subir tudo
 - [ ] `.env.example` com as variáveis (banco, senha do apresentador)
 - [ ] Modelo de dados: `Session`, `Cat`, `Participant`, `Vote`
-- [ ] Vitest configurado + estágio **Testes unitários** no Jenkinsfile
+- [x] Vitest configurado + estágio **Testes unitários** no Jenkinsfile
 
 ## 3. Regras de negócio
 

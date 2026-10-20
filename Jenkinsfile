@@ -31,6 +31,18 @@ pipeline {
       }
     }
 
+    stage('Testes unitários') {
+      steps {
+        sh 'pnpm test'
+      }
+      post {
+        always {
+          // Com CI=true o Vitest escreve o JUnit em test-results/
+          junit 'apps/*/test-results/junit.xml'
+        }
+      }
+    }
+
     stage('Build') {
       steps {
         sh 'pnpm build'

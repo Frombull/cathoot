@@ -19,6 +19,8 @@ Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
 ```bash
 pnpm install
 pnpm --filter web dev               # desenvolvimento, em http://localhost:3000
+pnpm --filter api dev               # API em http://localhost:3001 (GET /health)
+pnpm test                           # testes unitários de todos os pacotes
 
 docker compose up -d --build        # aplicação completa em containers
 ```

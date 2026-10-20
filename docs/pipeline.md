@@ -6,12 +6,13 @@ Implementados no [`Jenkinsfile`](../Jenkinsfile):
 
 1. **Install**: `pnpm install --frozen-lockfile`.
 2. **Lint + types**: `pnpm lint` e `pnpm typecheck` (`next typegen && tsc --noEmit` no web).
-3. **Build**: `pnpm build`.
-4. **Docker**: `docker compose build` e `docker compose up -d --wait`. O `--wait` só retorna quando o healthcheck passa, então serve de smoke test da imagem. No fim, `down --rmi local` limpa tudo.
+3. **Testes unitários**: `pnpm test`. Com `CI=true` o Vitest também escreve `apps/*/test-results/junit.xml`, e o step `junit` publica o relatório no Jenkins (precisa do plugin `junit` no `plugins.txt`).
+4. **Build**: `pnpm build`.
+5. **Docker**: `docker compose build` e `docker compose up -d --wait`. O `--wait` só retorna quando o healthcheck passa, então serve de smoke test da imagem. No fim, `down --rmi local` limpa tudo.
 
-Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm build`) rodam com `pnpm -r`, então a `apps/api` entra nos estágios sozinha quando tiver os mesmos scripts.
+Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem (o `web` ainda não tem `test`).
 
-Os próximos estágios (testes unitários, integração, E2E e deploy) estão no [roadmap](roadmap.md).
+Os próximos estágios (integração, E2E e deploy) estão no [roadmap](roadmap.md).
 
 ## Jenkins local (Docker Compose)
 

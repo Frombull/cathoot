@@ -7,7 +7,7 @@ flowchart LR
     APR["Apresentador<br/>(senha + QR code)"]
     ALU["Alunos<br/>(QR ou código da sala, só nome)"]
     WEB["apps/web<br/>Next.js + shadcn/ui"]
-    API["apps/api (virá depois)<br/>NestJS + Prisma"]
+    API["apps/api<br/>NestJS + Prisma"]
     DB[("PostgreSQL")]
 
     APR --> WEB
