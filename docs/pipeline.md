@@ -4,15 +4,16 @@
 
 Implementados no [`Jenkinsfile`](../Jenkinsfile):
 
-1. **Install**: `pnpm install --frozen-lockfile`.
+1. **Install**: `pnpm install --frozen-lockfile` e `pnpm generate` (gera o client do Prisma, de que o lint, os tipos e o build dependem).
 2. **Lint + types**: `pnpm lint` e `pnpm typecheck` (`next typegen && tsc --noEmit` no web).
 3. **Testes unitários**: `pnpm test`. Com `CI=true` o Vitest também escreve `apps/*/test-results/junit.xml`, e o step `junit` publica o relatório no Jenkins (precisa do plugin `junit` no `plugins.txt`).
-4. **Build**: `pnpm build`.
-5. **Docker**: `docker compose build` e `docker compose up -d --wait`. O `--wait` só retorna quando o healthcheck passa, então serve de smoke test da imagem. No fim, `down --rmi local` limpa tudo.
+4. **Integração**: sobe só o `postgres` do compose, aplica as migrations (`prisma migrate deploy`) e roda `pnpm --filter api test:integration` (`*.integration.spec.ts`), com relatório JUnit. Como o Jenkins roda em container, ele entra na rede do compose (`docker network connect`) para alcançar o Postgres pelo nome do serviço; no `cleanup` sai da rede antes do `compose down`.
+5. **Build**: `pnpm build`.
+6. **Docker**: `docker compose build` e `docker compose up -d --wait` (Postgres, API e web). O `--wait` só retorna quando todos os healthchecks passam, então serve de smoke test das imagens e das migrations. No fim, `down --volumes --rmi local` limpa tudo.
 
 Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem (o `web` ainda não tem `test`).
 
-Os próximos estágios (integração, E2E e deploy) estão no [roadmap](roadmap.md).
+Os próximos estágios (E2E e deploy) estão no [roadmap](roadmap.md).
 
 ## Jenkins local (Docker Compose)
 
@@ -35,7 +36,7 @@ docker compose up -d --build           # sobe o app e o Jenkins
 O serviço tem `profiles: ["jenkins"]`: só sobe se `COMPOSE_PROFILES=jenkins` (no `.env` da raiz) ou `--profile jenkins`. Isso é essencial para o CI: dentro do Jenkins não há `.env`, então o `docker compose` dos builds ignora o serviço e nunca tenta subir outro Jenkins.
 
 - Os builds rodam no próprio controller (`agent any`), sem agentes separados.
-- Cada build usa um projeto do compose próprio (`COMPOSE_PROJECT_NAME`) e porta aleatória (`WEB_PORT=0`), então builds de branches diferentes não colidem.
+- Cada build usa um projeto do compose próprio (`COMPOSE_PROJECT_NAME`) e portas aleatórias (`WEB_PORT=0`, `API_PORT=0`, `POSTGRES_PORT=0`), então builds de branches diferentes não colidem.
 
 ## GitHub
 

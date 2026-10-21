@@ -19,7 +19,7 @@ flowchart LR
 - A API concentra as regras de negócio (estados da sessão, voto único) e expõe REST para sessão, gatos, participantes e votos.
 - Tempo real por **polling**, sem WebSocket.
 - Identidade do aluno: nome + cookie anônimo.
-- Banco: PostgreSQL hospedado (Neon / Vercel Postgres); em dev local, via Docker Compose.
+- Banco: PostgreSQL. A sala vive em memória na API e é gravada no banco a cada ação (snapshot), então sobrevive a um reinício. Hoje roda no Docker Compose; hospedado (Neon / Vercel Postgres) só se a API sair do notebook.
 - Hospedagem da API: a definir. O front vai na Vercel com Root Directory `apps/web`.
 
 ## Pipeline CI/CD

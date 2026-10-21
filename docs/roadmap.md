@@ -15,11 +15,11 @@ Plano geral das próximas etapas, em ordem. Marcar como feito (`[x]`) ao conclui
 ## 2. API (`apps/api`)
 
 - [x] Esqueleto NestJS (`GET /health`)
-- [ ] Prisma
-- [ ] `apps/api/Dockerfile` (multi-stage, como o do web)
-- [ ] Serviços `api` e `postgres` no `docker-compose.yml` (volume + healthcheck + `depends_on`), para `docker compose up --build` subir tudo
-- [ ] `.env.example` com as variáveis (banco, senha do apresentador)
-- [ ] Modelo de dados: `Session`, `Cat`, `Participant`, `Vote`
+- [x] Prisma 7 com adaptador `pg` e migrations em `apps/api/prisma/`
+- [x] `apps/api/Dockerfile` (multi-stage, aplica as migrations ao subir)
+- [x] Serviços `api` e `postgres` no `docker-compose.yml` (volume + healthcheck + `depends_on`), para `docker compose up --build` subir tudo
+- [x] `.env.example` com as variáveis (banco, senha do apresentador)
+- [x] Modelo de dados: uma tabela `Session` com o snapshot da sala (ver [regras-de-negocio.md](regras-de-negocio.md))
 - [x] Vitest configurado + estágio **Testes unitários** no Jenkinsfile
 
 ## 3. Regras de negócio
@@ -32,9 +32,9 @@ Ver [regras-de-negocio.md](regras-de-negocio.md). Testes primeiro.
 - [x] Validação do gato e geração do código da sala
 - [x] Catálogo de gatos em arquivos (`apps/api/catalog/`: `gatos.yaml` + `<id>.jpg|png`) com leitura validada por testes
 - [ ] Trocar as fotos provisórias do catálogo pelos memes de verdade (feito por você)
-- [ ] Servir as imagens em `/cats/<arquivo>` e `GET /cats`; o Dockerfile da API precisa copiar `catalog/`
-- [ ] Endpoints REST (sessão, gatos, participantes, votos)
-- [ ] Estágio **Integração** (testes da API contra Postgres no Compose)
+- [x] Servir as imagens em `/cats/<arquivo>` e `GET /cats`; o Dockerfile da API copia `catalog/`
+- [x] Endpoints REST (sessão, participantes, votos e ações do apresentador), ver [api.md](api.md)
+- [x] Estágio **Integração** (testes da API contra Postgres no Compose)
 
 ## 4. Telas (`apps/web`)
 
