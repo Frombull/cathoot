@@ -2,9 +2,22 @@
 
 - Bobinho e divertido, estilo "macarrão": fontes arredondadas, gordinhas e curvas, bem de brincadeira.
 - **Nada de fonte monoespaçada** nem visual sério/corporativo.
-- Fontes ainda não escolhidas. Candidatas (via Google Fonts): Fredoka, Baloo 2, Chewy, Bubblegum Sans.
+- Fontes (2026-10-19): **Fredoka** nos títulos e **Nunito** no texto, instaladas pelo pnpm (`@fontsource-variable/*`) em vez de `next/font/google`, para o build não depender de rede externa.
 - Cores vibrantes e animações leves.
 - O gatinho correndo pela tela pode ser só efeito visual, com emoji ou uma sprite sheet única.
+
+## Temas claro e escuro
+
+- Os dois temas são obrigatórios em toda tela nova.
+- O tema é o atributo `data-theme` no `<html>`, aplicado por um script inline antes da primeira pintura (sem flash). Começa pelo tema do sistema e a escolha do botão fica no `localStorage`.
+- A troca usa a View Transitions API e cada clique usa o próximo efeito: **retângulo → círculo com blur → persianas**. CSS puro em `globals.css` (atributo `data-vt` no `<html>`), baseado em beui.dev/components/motion/theme-toggle. Sem suporte à API ou com "reduzir movimento", a troca é instantânea.
+- As cores são variáveis CSS em `apps/web/src/app/globals.css` (nomes compatíveis com o shadcn/ui). Não usar cor fixa nos componentes; usar `bg-background`, `text-foreground`, `bg-primary` etc.
+- Escuro: fundo azul-roxo profundo, texto creme. Claro: fundo creme, texto roxo-tinta. Roxo `primary` e amarelo `accent` nos dois.
+
+## Telas
+
+- Landing (`/`): feita a partir do mock "Tribunal Felino em Ação". Corta ranking, perfil e login, que não fazem parte do jogo. No lugar do "Entrar" ficam "Criar sala" (apresentador) e o campo do código da sala (aluno). A ilustração do gato juiz (`public/hero-juiz.jpg`) é um recorte do mock, serve de placeholder.
+- 404 (`not-found.tsx`): foto do [HTTP Cats](https://http.cat/404) (`public/gato-404.jpg`), sobre fundo preto fixo, sem header, com o título "Esse gato se escondeu." e botão de volta para a landing.
 
 ## Referências
 

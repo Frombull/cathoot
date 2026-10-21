@@ -1,6 +1,46 @@
 name: cathoot
 
+include:
+  - jenkins/docker-compose.yml
+
 services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: cathoot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cathoot}
+      POSTGRES_DB: cathoot
+    ports:
+      # POSTGRES_PORT=0: porta aleatória (usado no Jenkins)
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cathoot -d cathoot"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://cathoot:${POSTGRES_PASSWORD:-cathoot}@postgres:5432/cathoot
+      PRESENTER_PASSWORD: ${PRESENTER_PASSWORD:-miau}
+    ports:
+      # API_PORT=0: porta aleatória (usado no Jenkins)
+      - "${API_PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
   web:
     build:
       context: .
@@ -14,3 +54,6 @@ services:
       timeout: 3s
       retries: 10
       start_period: 5s
+
+volumes:
+  pgdata:

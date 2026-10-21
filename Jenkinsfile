@@ -13,7 +13,10 @@ pipeline {
     NEXT_TELEMETRY_DISABLED = '1'
     // Compose isolado por build, para não colidir com outros
     COMPOSE_PROJECT_NAME = "cathoot-ci-${env.BRANCH_NAME}-${env.BUILD_NUMBER}".toLowerCase().replaceAll('[^a-z0-9_-]', '-')
+    // Portas publicadas aleatórias, para builds simultâneos não colidirem
     WEB_PORT = '0'
+    API_PORT = '0'
+    POSTGRES_PORT = '0'
   }
 
   stages {
@@ -21,6 +24,8 @@ pipeline {
       steps {
         sh 'node --version && pnpm --version'
         sh 'pnpm install --frozen-lockfile'
+        // Gera o client do Prisma (não é versionado); lint, tipos e build dependem dele
+        sh 'pnpm generate'
       }
     }
 
@@ -28,6 +33,41 @@ pipeline {
       steps {
         sh 'pnpm lint'
         sh 'pnpm typecheck'
+      }
+    }
+
+    stage('Testes unitários') {
+      steps {
+        sh 'pnpm test'
+      }
+      post {
+        always {
+          // Com CI=true o Vitest escreve o JUnit em test-results/
+          junit 'apps/*/test-results/junit.xml'
+        }
+      }
+    }
+
+    stage('Integração') {
+      environment {
+        // O Jenkins roda em container: entra na rede do compose para alcançar o Postgres pelo nome do serviço
+        DATABASE_URL = 'postgresql://cathoot:cathoot@postgres:5432/cathoot'
+      }
+      steps {
+        sh 'docker compose up -d --wait postgres'
+        sh 'docker network connect ${COMPOSE_PROJECT_NAME}_default $(hostname)'
+        sh 'pnpm --filter api exec prisma migrate deploy'
+        sh 'pnpm --filter api test:integration'
+      }
+      post {
+        always {
+          junit testResults: 'apps/api/test-results/junit-integration.xml', allowEmptyResults: true
+        }
+        cleanup {
+          // A rede só some se o Jenkins sair dela antes
+          sh 'docker network disconnect ${COMPOSE_PROJECT_NAME}_default $(hostname) || true'
+          sh 'docker compose down --volumes'
+        }
       }
     }
 

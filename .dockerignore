@@ -8,3 +8,6 @@ docs
 jenkins
 UI Ideas
 *.md
+**/dist
+**/test-results
+**/src/generated
