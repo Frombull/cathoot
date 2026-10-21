@@ -12,6 +12,7 @@ Leia o arquivo relevante antes de trabalhar no assunto. Ao tomar uma decisão no
 - [docs/visao.md](docs/visao.md): o que é o projeto, fluxo do jogo e princípios.
 - [docs/roadmap.md](docs/roadmap.md): plano geral das próximas etapas.
 - [docs/arquitetura.md](docs/arquitetura.md): diagramas da aplicação e do pipeline.
+- [docs/api.md](docs/api.md): endpoints REST e códigos de erro.
 - [docs/regras-de-negocio.md](docs/regras-de-negocio.md): estados da sessão, regras de voto e modelo de dados (alvo dos testes).
 - [docs/decisoes-tecnicas.md](docs/decisoes-tecnicas.md): stack, monorepo, pnpm, Vercel e `ignoreCommand`.
 - [docs/visual.md](docs/visual.md): identidade visual, fontes e animações.

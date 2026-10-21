@@ -20,6 +20,17 @@ export interface Summary {
   mostGuilty: CatResult | null;
 }
 
+// Tudo que a sessão precisa para continuar de onde parou; é só JSON, então cabe numa coluna do banco
+export interface SessionSnapshot {
+  code: string;
+  state: SessionState;
+  cats: Cat[];
+  participants: Participant[];
+  currentIndex: number;
+  currentVotes: Record<string, VoteChoice>;
+  results: CatResult[];
+}
+
 const NO_CAT = -1;
 
 // Regras da sessão. Não conhece HTTP nem banco; quem chama garante que só o apresentador
@@ -33,6 +44,30 @@ export class Session {
   private results: CatResult[] = [];
 
   constructor(readonly code: string) {}
+
+  static restore(snapshot: SessionSnapshot) {
+    const copy = structuredClone(snapshot);
+    const session = new Session(copy.code);
+    session._state = copy.state;
+    session._cats = copy.cats;
+    session._participants = copy.participants;
+    session.currentIndex = copy.currentIndex;
+    session.currentVotes = new Map(Object.entries(copy.currentVotes));
+    session.results = copy.results;
+    return session;
+  }
+
+  toSnapshot(): SessionSnapshot {
+    return structuredClone({
+      code: this.code,
+      state: this._state,
+      cats: this._cats,
+      participants: this._participants,
+      currentIndex: this.currentIndex,
+      currentVotes: Object.fromEntries(this.currentVotes),
+      results: this.results,
+    });
+  }
 
   get state() {
     return this._state;
@@ -48,6 +83,22 @@ export class Session {
 
   get currentCat(): Cat | undefined {
     return this._cats[this.currentIndex];
+  }
+
+  get currentCatNumber() {
+    return this.currentIndex === NO_CAT ? undefined : this.currentIndex + 1;
+  }
+
+  get votesReceived() {
+    return this.currentVotes.size;
+  }
+
+  get currentResult(): CatResult | undefined {
+    return this._state === "RESULTADO" ? this.results.at(-1) : undefined;
+  }
+
+  hasVoted(participantId: string) {
+    return this.currentVotes.has(participantId);
   }
 
   addCat(input: Cat) {

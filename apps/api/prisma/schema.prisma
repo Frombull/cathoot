@@ -1,0 +1,20 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// A Session do domínio inteira vai para a coluna snapshot (ver SessionSnapshot);
+// as colunas soltas servem para achar e proteger a sala.
+model Session {
+  code           String   @id
+  presenterToken String
+  snapshot       Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

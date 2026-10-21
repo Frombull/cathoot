@@ -152,6 +152,76 @@ describe("votos", () => {
   });
 });
 
+describe("acompanhamento da votação", () => {
+  beforeEach(() => {
+    session.addCat(gato("Bolinha"));
+    session.addCat(gato("Mingau"));
+  });
+
+  it("numera o gato atual a partir de 1", () => {
+    const ana = session.join("Ana");
+    expect(session.currentCatNumber).toBeUndefined();
+
+    session.start();
+    expect(session.currentCatNumber).toBe(1);
+
+    session.vote(ana.id, "CULPADO");
+    session.reveal();
+    session.next();
+    expect(session.currentCatNumber).toBe(2);
+
+    session.reveal();
+    session.next();
+    expect(session.currentCatNumber).toBeUndefined();
+  });
+
+  it("conta os votos recebidos no gato atual sem revelar o lado", () => {
+    const ana = session.join("Ana");
+    session.join("Beto");
+    session.start();
+    expect(session.votesReceived).toBe(0);
+
+    session.vote(ana.id, "CULPADO");
+
+    expect(session.votesReceived).toBe(1);
+  });
+
+  it("diz se um participante já votou no gato atual", () => {
+    const ana = session.join("Ana");
+    const beto = session.join("Beto");
+    session.start();
+    session.vote(ana.id, "CULPADO");
+
+    expect(session.hasVoted(ana.id)).toBe(true);
+    expect(session.hasVoted(beto.id)).toBe(false);
+    expect(session.hasVoted("fantasma")).toBe(false);
+  });
+
+  it("zera a contagem ao passar para o gato seguinte", () => {
+    const ana = session.join("Ana");
+    session.start();
+    session.vote(ana.id, "CULPADO");
+    session.reveal();
+    session.next();
+
+    expect(session.votesReceived).toBe(0);
+    expect(session.hasVoted(ana.id)).toBe(false);
+  });
+
+  it("expõe o resultado do gato só enquanto está em RESULTADO", () => {
+    const ana = session.join("Ana");
+    session.start();
+    session.vote(ana.id, "CULPADO");
+    expect(session.currentResult).toBeUndefined();
+
+    session.reveal();
+    expect(session.currentResult).toMatchObject({ cat: { name: "Bolinha" }, guilty: 1, innocent: 0, verdict: "CULPADO" });
+
+    session.next();
+    expect(session.currentResult).toBeUndefined();
+  });
+});
+
 describe("revelar", () => {
   beforeEach(() => {
     session.addCat(gato("Bolinha"));

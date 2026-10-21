@@ -51,4 +51,9 @@ Nome + cookie anônimo, sem login.
 
 ## Modelo de dados
 
-`Session`, `Cat`, `Participant`, `Vote` (único por participante + gato).
+Uma tabela `Session` (Postgres, via Prisma): `code` (chave), `presenterToken`, `snapshot` (JSON), `createdAt`, `updatedAt`.
+
+- O `snapshot` é a `Session` do domínio inteira (`toSnapshot()` / `Session.restore()`): estado, gatos, participantes, votos do gato atual e resultados anteriores. Assim as regras (voto único por participante + gato, estados) continuam só no domínio, sem duplicar em SQL, e os testes unitários valem para o que roda em produção.
+- A API mantém cada sala em memória (uma única instância) e grava o snapshot a cada ação, em fila por sala. Se reiniciar, a sala é lida do banco no primeiro acesso.
+- Não há tabelas separadas de gato, participante e voto. Se um dia for preciso consultar votos por SQL, é só normalizar a partir do snapshot.
+- `presenterToken` é gerado ao criar a sala (16 bytes aleatórios) e autoriza as ações do apresentador naquela sala. A senha do apresentador só serve para criar salas.

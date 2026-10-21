@@ -7,5 +7,5 @@ export default defineConfig([
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { languageOptions: { globals: globals.node } },
-  globalIgnores(["dist/**", "test-results/**"]),
+  globalIgnores(["dist/**", "test-results/**", "src/generated/**"]),
 ]);
