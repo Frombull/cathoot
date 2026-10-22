@@ -12,6 +12,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/web/package.json apps/web/
 RUN pnpm install --frozen-lockfile
 COPY apps/web apps/web
+# Para onde o Next repassa /api/* e /cats/* (rewrites); fica fixo no build. "api" é o serviço do compose
+ARG API_URL=http://api:3001
+ENV API_URL=${API_URL}
 RUN pnpm --filter web build
 
 FROM ${NODE_IMAGE} AS runner

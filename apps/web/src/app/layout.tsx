@@ -4,7 +4,7 @@ import "@fontsource-variable/nunito";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cathoot",
+  title: { default: "Cathoot", template: "%s | Cathoot" },
   description: "O kahoot de tribunal de crime de gatos!",
 };
 
