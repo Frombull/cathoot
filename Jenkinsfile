@@ -3,7 +3,7 @@ pipeline {
 
   options {
     timestamps()
-    timeout(time: 20, unit: 'MINUTES')
+    timeout(time: 30, unit: 'MINUTES')
     disableConcurrentBuilds()
     buildDiscarder(logRotator(numToKeepStr: '20'))
   }
@@ -80,7 +80,7 @@ pipeline {
     stage('Docker') {
       steps {
         sh 'docker compose build'
-        // --wait espera o healthcheck passar (smoke test)
+        // --wait espera o healthcheck passar (smoke test). A aplicação fica no ar para o E2E
         sh 'docker compose up -d --wait'
         sh 'docker compose ps'
       }
@@ -88,10 +88,45 @@ pipeline {
         unsuccessful {
           sh 'docker compose logs --no-color'
         }
+      }
+    }
+
+    stage('E2E') {
+      steps {
+        sh 'docker compose --profile e2e build e2e'
+        // Playwright em container, na rede do compose (BASE_URL=http://web:3000), contra a aplicação do estágio Docker.
+        // Sem --rm: os relatórios são copiados do container depois que ele termina
+        sh 'docker compose --profile e2e run --name ${COMPOSE_PROJECT_NAME}-e2e e2e'
+      }
+      post {
+        always {
+          sh 'rm -rf e2e/test-results e2e/playwright-report'
+          sh 'docker cp ${COMPOSE_PROJECT_NAME}-e2e:/repo/e2e/test-results e2e/ || true'
+          sh 'docker cp ${COMPOSE_PROJECT_NAME}-e2e:/repo/e2e/playwright-report e2e/ || true'
+          junit testResults: 'e2e/test-results/junit.xml', allowEmptyResults: true
+          publishHTML(target: [
+            reportName: 'Playwright',
+            reportDir: 'e2e/playwright-report',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
+        }
+        unsuccessful {
+          sh 'docker compose logs --no-color web api'
+        }
         cleanup {
-          sh 'docker compose down --volumes --rmi local'
+          sh 'docker rm -f ${COMPOSE_PROJECT_NAME}-e2e || true'
         }
       }
+    }
+  }
+
+  post {
+    cleanup {
+      // Derruba o que os estágios Docker e E2E subiram
+      sh 'docker compose --profile e2e down --volumes --rmi local'
     }
   }
 }
