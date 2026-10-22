@@ -121,12 +121,43 @@ pipeline {
         }
       }
     }
+
+    stage('Carga') {
+      steps {
+        sh 'docker compose --profile load build load'
+        // k6 em container contra o web: a turma inteira entrando, consultando a sala e votando.
+        // Os limites (thresholds) de load/votacao.js reprovam o estágio. Sem --rm, como no E2E
+        sh 'docker compose --profile load run --name ${COMPOSE_PROJECT_NAME}-load load'
+      }
+      post {
+        always {
+          sh 'rm -rf load/test-results'
+          sh 'docker cp ${COMPOSE_PROJECT_NAME}-load:/home/k6/test-results load/ || true'
+          // Um caso de teste por limite
+          junit testResults: 'load/test-results/junit.xml', allowEmptyResults: true
+          publishHTML(target: [
+            reportName: 'k6',
+            reportDir: 'load/test-results',
+            reportFiles: 'relatorio.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
+        }
+        unsuccessful {
+          sh 'docker compose logs --no-color web api'
+        }
+        cleanup {
+          sh 'docker rm -f ${COMPOSE_PROJECT_NAME}-load || true'
+        }
+      }
+    }
   }
 
   post {
     cleanup {
-      // Derruba o que os estágios Docker e E2E subiram
-      sh 'docker compose --profile e2e down --volumes --rmi local'
+      // Derruba o que os estágios Docker, E2E e Carga subiram
+      sh 'docker compose --profile e2e --profile load down --volumes --rmi local'
     }
   }
 }
