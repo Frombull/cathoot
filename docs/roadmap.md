@@ -55,13 +55,13 @@ Ver [visual.md](visual.md) e [visao.md](visao.md).
 
 - [x] Playwright com dois navegadores (apresentador + aluno): criar sala → entrar → votar → ver o veredito, e o jogo inteiro até o resumo (`e2e/`)
 - [x] Estágio **E2E** no Jenkins com relatório HTML/JUnit publicado
-- [ ] Primeiro build verde com o estágio E2E (antes, reconstruir a imagem do Jenkins: entrou o plugin `htmlpublisher`)
+- [ ] Primeiro build verde com os estágios E2E e Carga no Jenkins (imagem do Jenkins já reconstruída com o `htmlpublisher`; falta o push na `dev`)
 
 ## 6. Deploy e fechamento
 
 - [ ] Decidir onde a API roda (a Vercel só cobre o front). Opção simples: tudo no notebook com `docker compose up`
 - [ ] Estágio **Deploy** (só `master`)
-- [ ] Teste de carga simples (ex.: k6) para a votação com a turma toda
+- [x] Teste de carga (k6) para a votação com a turma toda, com estágio **Carga** no Jenkins (`load/`)
 - [ ] Ensaio da apresentação
 
 ## Opcionais

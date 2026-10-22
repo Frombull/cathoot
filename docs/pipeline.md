@@ -12,11 +12,13 @@ Implementados no [`Jenkinsfile`](../Jenkinsfile):
 6. **Docker**: `docker compose build` e `docker compose up -d --wait` (Postgres, API e web). O `--wait` só retorna quando todos os healthchecks passam, então serve de smoke test das imagens e das migrations. O healthcheck do `web` também chama `/api/health` através do rewrite do Next, o que confere o caminho web → API. A aplicação fica no ar para o próximo estágio.
 7. **E2E**: `docker compose --profile e2e run e2e` roda o Playwright num container (imagem oficial do Playwright, `e2e/Dockerfile`) dentro da rede do compose, contra `http://web:3000`. Como o `jenkins_home` é um volume, não dá para montar o workspace no container: os relatórios saem com `docker cp` depois que ele termina. O step `junit` publica `e2e/test-results/junit.xml` e o `publishHTML` (plugin `htmlpublisher`) publica o relatório HTML do Playwright, com trace e screenshot dos testes que falham.
 
-No fim do pipeline (`post { cleanup }`), `docker compose --profile e2e down --volumes --rmi local` derruba tudo.
+8. **Carga**: `docker compose --profile load run load` roda o k6 num container (`load/Dockerfile`), também contra `http://web:3000`, com 60 alunos numa sala só (ver [decisoes-tecnicas.md](decisoes-tecnicas.md)). Os limites (*thresholds*) do `load/votacao.js` reprovam o estágio (o k6 sai com código 99). Os relatórios saem com `docker cp`, como no E2E: o `junit` publica um caso por limite e o `publishHTML` publica o relatório HTML do k6.
+
+No fim do pipeline (`post { cleanup }`), `docker compose --profile e2e --profile load down --volumes --rmi local` derruba tudo.
 
 Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem. O pacote `e2e` tem `typecheck`, mas o script dos testes se chama `e2e` (não `test`) justamente para o Playwright não rodar no estágio de testes unitários.
 
-O relatório do Playwright é um app em JavaScript, e a CSP padrão do Jenkins deixaria a página em branco. Por isso o `jenkins/Dockerfile` relaxa a CSP (`hudson.model.DirectoryBrowserSupport.CSP`), o que só é aceitável num Jenkins local. Mudou o `plugins.txt` ou o `Dockerfile` do Jenkins: `docker compose up -d --build jenkins`.
+Os relatórios do Playwright e do k6 são apps em JavaScript, e a CSP padrão do Jenkins deixaria a página em branco. Por isso o `jenkins/Dockerfile` relaxa a CSP (`hudson.model.DirectoryBrowserSupport.CSP`), o que só é aceitável num Jenkins local. Mudou o `plugins.txt` ou o `Dockerfile` do Jenkins: `docker compose up -d --build jenkins`.
 
 O próximo estágio (deploy) está no [roadmap](roadmap.md).
 

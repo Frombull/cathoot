@@ -31,7 +31,7 @@ flowchart LR
 
     subgraph Stages["Estágios do Jenkinsfile"]
         direction LR
-        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários"] --> S4["Integração<br/>(Postgres)"] --> S3["Build"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> S6["Deploy<br/>(só master)"]
+        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários"] --> S4["Integração<br/>(Postgres)"] --> S3["Build"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> SC["Carga k6<br/>(60 alunos votando)"] --> S6["Deploy<br/>(só master)"]
     end
 
     JK --> S0

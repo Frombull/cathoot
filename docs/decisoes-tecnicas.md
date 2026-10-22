@@ -7,6 +7,7 @@
 - Banco: PostgreSQL
 - Infra local: Docker Compose
 - E2E: Playwright
+- Carga: k6
 - Deploy: Vercel
 - CI/CD: Jenkins
 
@@ -70,6 +71,41 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 - `e2e/Dockerfile` usa a imagem oficial `mcr.microsoft.com/playwright`, que já traz os navegadores. **A tag precisa ser a mesma versão do `@playwright/test`** do `e2e/package.json` (por isso a versão é fixa, sem `^`).
 - O serviço `e2e` do compose tem `profiles: ["e2e"]`: o `docker compose up` normal não o sobe.
 - Rodar localmente: `docker compose up -d --build` e `docker compose --profile e2e run --rm e2e`, ou, fora do Docker, `pnpm --filter e2e exec playwright install chromium` uma vez e `BASE_URL=http://localhost:3000 pnpm e2e`.
+
+## Teste de carga (`load/`)
+
+- **k6** (`load/votacao.js`), na imagem oficial `grafana/k6` com versão fixa. Não é pacote do workspace: o k6 é um binário em Go, não um pacote npm.
+- Simula a sala de aula numa sala só:
+  - Os alunos (`STUDENTS`, padrão 60) chegam aos poucos ao longo de 10 s.
+  - Cada um consulta a sala a cada 1,5 s, como o celular, e baixa a foto de cada gato.
+  - Cada um vota em até 3 s depois que o gato aparece.
+  - O apresentador espera todo mundo entrar e votar, revela e passa para o próximo gato até o `FIM`.
+  - Passa pelo `web` (rewrite do Next), o mesmo caminho dos navegadores. Lê o número de gatos da própria sala, então não depende do catálogo.
+- O estágio reprova se algum destes limites estourar:
+  - Falhas HTTP: menos de 1%.
+  - p95 da consulta: abaixo de 500 ms.
+  - p95 de entrar e de votar: abaixo de 1 s.
+  - p95 da foto: abaixo de 2 s.
+  - Votos: todos contados em todos os gatos.
+  - Jogo: precisa chegar ao fim.
+- Se o jogo trava, o apresentador aborta o teste (`exec.test.abort`), senão os alunos ficariam no polling até o `maxDuration`.
+- **Só módulos embutidos** (`k6/http`, `k6/metrics`...). O k6 2 tenta baixar um binário sob medida quando vê um import desconhecido, e o `k6/summary` não existe. Por isso o resumo em português e o JUnit (um caso por limite) são escritos à mão no `handleSummary`.
+- O relatório HTML é o *web dashboard* do k6, exportado no fim (`K6_WEB_DASHBOARD_EXPORT`), sem nada externo. Em testes de poucos segundos o k6 pula o relatório por falta de dados.
+- Rodar localmente: `docker compose up -d --build` e `docker compose --profile load run --rm load`. Para mais gente: `-e STUDENTS=300`.
+- **Resultados** (2026-10-22, tudo no mesmo Mac com OrbStack, k6 incluso):
+
+  | Alunos | Votar (p95) | Consultar (p95) | Resultado |
+  | --- | --- | --- | --- |
+  | 60 | 19 ms | 10 ms | passa com folga |
+  | 300 | 27 ms | 8 ms | passa com folga |
+  | 1000 | 16,6 s | 3,8 s | todos os votos contados e o jogo chega ao fim, mas os limites de tempo estouram |
+
+  - Para uma turma, sobra muita folga.
+  - A partir de algumas centenas de alunos, o gargalo provável é a fila de gravações da sala:
+    - Cada voto grava o snapshot inteiro da sala no banco.
+    - O snapshot cresce com a turma.
+    - Cada voto ainda espera as gravações anteriores.
+  - Se um dia precisar de mais gente, o caminho é juntar as gravações pendentes numa só.
 
 ## Docker
 

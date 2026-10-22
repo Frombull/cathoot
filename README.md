@@ -11,6 +11,7 @@ Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
 - **Banco de dados:** PostgreSQL
 - **Infra local:** Docker Compose
 - **Testes E2E:** Playwright
+- **Teste de carga:** k6
 - **Deploy:** Vercel
 - **CI/CD:** Jenkins
 
@@ -26,6 +27,7 @@ pnpm --filter api test:integration  # testes da API contra o Postgres (DATABASE_
 
 docker compose up -d --build                  # aplicação completa em containers (web, api e postgres)
 docker compose --profile e2e run --rm e2e     # testes E2E (Playwright) contra a aplicação no ar
+docker compose --profile load run --rm load   # teste de carga (k6): 60 alunos votando ao mesmo tempo
 ```
 
 A senha do apresentador no compose é `miau` (mude com `PRESENTER_PASSWORD` no `.env`). Endpoints da API em [docs/api.md](docs/api.md).
