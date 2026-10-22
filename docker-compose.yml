@@ -73,5 +73,18 @@ services:
       web:
         condition: service_healthy
 
+  # Teste de carga (k6): a turma inteira entrando, acompanhando a sala e votando. Só roda quando chamado:
+  # docker compose --profile load run --rm load
+  load:
+    profiles: ["load"]
+    build: ./load
+    environment:
+      BASE_URL: http://web:3000
+      PRESENTER_PASSWORD: ${PRESENTER_PASSWORD:-miau}
+      STUDENTS: ${STUDENTS:-60}
+    depends_on:
+      web:
+        condition: service_healthy
+
 volumes:
   pgdata:
