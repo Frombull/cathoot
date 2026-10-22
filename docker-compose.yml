@@ -59,5 +59,19 @@ services:
       retries: 10
       start_period: 5s
 
+  # Testes E2E (Playwright) contra o web, pela rede do compose. Só roda quando chamado:
+  # docker compose --profile e2e run --rm e2e
+  e2e:
+    profiles: ["e2e"]
+    build:
+      context: .
+      dockerfile: e2e/Dockerfile
+    environment:
+      BASE_URL: http://web:3000
+      PRESENTER_PASSWORD: ${PRESENTER_PASSWORD:-miau}
+    depends_on:
+      web:
+        condition: service_healthy
+
 volumes:
   pgdata:

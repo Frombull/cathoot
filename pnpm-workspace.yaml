@@ -1,5 +1,6 @@
 packages:
   - apps/*
+  - e2e
 
 # Rede lenta: alguns metadados do registro (prisma, next) têm dezenas de MB e passam do padrão de 60 s
 fetchTimeout: 300000
