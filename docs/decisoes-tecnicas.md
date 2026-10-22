@@ -44,11 +44,40 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 - A API guarda cada sala em memória e grava um snapshot no Postgres a cada ação (ver [regras-de-negocio.md](regras-de-negocio.md)). Isso exige **uma só instância** da API.
 - Erros do domínio viram `{ "code", "message" }` com status HTTP pelo `DomainErrorFilter`. Endpoints em [api.md](api.md).
 
+## Front (`apps/web`)
+
+- Next.js 16 (App Router). As páginas leem `params`/`searchParams` (que são `Promise`) no servidor e passam o código da sala para um componente de cliente; todo o jogo roda no cliente.
+- Rotas: `/criar` (senha), `/entrar?codigo=` (código + nome), `/sala/<código>` (aluno) e `/sala/<código>/apresentador` (telão). O código da URL é normalizado como na API.
+- Polling no hook `useSessionView` (`src/hooks/`): uma consulta por vez, a cada 1,5 s; para no `FIM` e em erro fatal (`SESSION_NOT_FOUND`, `PARTICIPANT_NOT_FOUND`); erro de rede mantém a última tela. A resposta de "Começar/Revelar/Próximo" já atualiza a tela, e uma consulta que saiu antes dela é descartada.
+- `localStorage` lido com `useSyncExternalStore` (sem `setState` em efeito, que o lint do React 19 recusa).
+- Imagens dos gatos com `<img>` simples: vêm da API (via rewrite) ou de URL externa, sem o otimizador do `next/image`.
+- QR code com `qrcode.react` (SVG). Ele usa o endereço da página: abrir o telão em `localhost` gera um QR inútil para os celulares, então o painel mostra uma dica para usar o IP da rede.
+
+### shadcn/ui
+
+- Instalado com estilo `radix-nova` (`components.json`); componentes em `src/components/ui/` (`button`, `input`, `label`). O `Button` ganhou variantes do jogo (`accent`, `guilty`, `innocent`) e o tamanho `xl`: no shadcn o código é nosso e pode ser editado.
+- **Não rodar `shadcn init` de novo.** Em 2026-10-22 ele trocou as fontes por `next/font/google` (Geist), sobrescreveu o tema do `globals.css`, colocou o próprio `shadcn` como dependência de runtime e atualizou pacotes sem relação no lockfile. Foi tudo revertido. Para novos componentes, `pnpm dlx shadcn@<versão> add <nome> --dry-run`, depois sem `--dry-run`, e conferir o diff.
+- Dependências: `radix-ui` (pacote único com todos os primitivos, o padrão atual do shadcn), `class-variance-authority` e `cn` (do próprio shadcn, substitui `clsx` + `tailwind-merge`).
+
+### Testes do front
+
+- Vitest + Testing Library + jsdom (`vitest.config.mts`, `src/**/*.spec.ts(x)`), JUnit em `test-results/` com `CI=true`, como na API. O `@types/node` do `web` foi para a 24 (o Vitest 5 pede 22+ e as imagens rodam Node 24).
+- Cobrem o cliente da API, o armazenamento local, o polling (com relógio falso) e as telas do aluno e do apresentador com `fetch` falso.
+
+## E2E (`e2e/`)
+
+- Pacote próprio no workspace, com Playwright e um teste de dois navegadores (apresentador no desktop, aluno num Pixel 7). Os testes não dependem dos nomes do catálogo: leem o gato da vez na tela.
+- `e2e/Dockerfile` usa a imagem oficial `mcr.microsoft.com/playwright`, que já traz os navegadores. **A tag precisa ser a mesma versão do `@playwright/test`** do `e2e/package.json` (por isso a versão é fixa, sem `^`).
+- O serviço `e2e` do compose tem `profiles: ["e2e"]`: o `docker compose up` normal não o sobe.
+- Rodar localmente: `docker compose up -d --build` e `docker compose --profile e2e run --rm e2e`, ou, fora do Docker, `pnpm --filter e2e exec playwright install chromium` uma vez e `BASE_URL=http://localhost:3000 pnpm e2e`.
+
 ## Docker
 
 - `docker-compose.yml` na raiz sobe a aplicação inteira (`docker compose up --build`). Tem `postgres`, `api` e `web`. A `api` só sobe depois do Postgres saudável (`depends_on` com `service_healthy`).
 - `apps/web/Dockerfile` é multi-stage e usa a saída `standalone` do Next, então a imagem final não leva pnpm nem código-fonte. O contexto do build é a raiz do monorepo, por causa do lockfile e do workspace.
-- O healthcheck fica no compose e usa `node` + `fetch`, porque a imagem slim não tem curl.
+- O healthcheck fica no compose e usa `node` + `fetch`, porque a imagem slim não tem curl. O do `web` também chama `/api/health` pelo rewrite, e o `web` só sobe depois da `api` saudável.
+- O `apps/web/Dockerfile` recebe `API_URL` como `ARG` (padrão `http://api:3001`), porque os rewrites do Next ficam fixos no build.
+- Rede lenta: o pnpm 11 confere cada item do lockfile no registro (a política de idade mínima) e baixa metadados completos (o do `prisma` tem 44 MB). Numa conexão de ~2 MB/s (2026-10-22), o `pnpm install` das imagens levou mais de 7 minutos e estourou o timeout padrão de 60 s por requisição. Por isso `fetchTimeout: 300000` (5 min) no `pnpm-workspace.yaml`: numa rede boa não muda nada, é só o teto.
 - `WEB_PORT`, `API_PORT` e `POSTGRES_PORT` definem as portas publicadas (padrão 3000, 3001 e 5432). Com `0`, o Docker escolhe uma porta livre (usado no CI).
 - `apps/api/Dockerfile` é multi-stage, mas a imagem final leva o `node_modules` inteiro de propósito: precisa do CLI do Prisma para aplicar as migrations ao subir.
 - O Jenkins é um serviço em `jenkins/docker-compose.yml`, incluído pelo compose da raiz com `profiles: ["jenkins"]` (ver [pipeline.md](pipeline.md)). Só sobe com `COMPOSE_PROFILES=jenkins` no `.env` da raiz.

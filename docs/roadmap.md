@@ -41,19 +41,21 @@ Ver [regras-de-negocio.md](regras-de-negocio.md). Testes primeiro.
 Ver [visual.md](visual.md) e [visao.md](visao.md).
 
 - [x] Escolher fontes e temas claro/escuro
-- [x] Landing page (`/`): botão "Criar sala" e campo de código da sala (só front; `/criar` e `/entrar` ainda não existem)
-- [ ] Tela `/criar` (senha do apresentador) e `/entrar` (código + nome)
-- [ ] Instalar shadcn/ui
-- [ ] Vitest no `web` + estágio **Testes unitários**
-- [ ] Apresentador: senha, criar sessão, QR code, "Próximo" e "Revelar"
-- [ ] Aluno: entrar com nome, votar, ver o veredito
-- [ ] Polling (~1,5 s) para atualizar as telas
-- [ ] Resumo final (gato mais culpado etc.)
+- [x] Landing page (`/`): botão "Criar sala" e campo de código da sala
+- [x] Tela `/criar` (senha do apresentador) e `/entrar` (código + nome)
+- [x] Instalar shadcn/ui (`button`, `input`, `label`)
+- [x] Vitest no `web` (Testing Library + jsdom), já pego pelo estágio **Testes unitários**
+- [x] Apresentador (`/sala/<código>/apresentador`): QR code, "Começar", "Revelar" e "Próximo"
+- [x] Aluno (`/sala/<código>`): entrar com nome, votar, ver o veredito
+- [x] Polling (~1,5 s) para atualizar as telas
+- [x] Resumo final (gato mais culpado e Prisão da Soneca)
+- [x] Rewrite do Next de `/api/*` e `/cats/*` para a API
 
 ## 5. E2E
 
-- [ ] Playwright com dois navegadores (apresentador + aluno): cadastrar gato → votar → ver o veredito
-- [ ] Estágio **E2E** no Jenkins com relatório HTML/JUnit publicado
+- [x] Playwright com dois navegadores (apresentador + aluno): criar sala → entrar → votar → ver o veredito, e o jogo inteiro até o resumo (`e2e/`)
+- [x] Estágio **E2E** no Jenkins com relatório HTML/JUnit publicado
+- [ ] Primeiro build verde com o estágio E2E (antes, reconstruir a imagem do Jenkins: entrou o plugin `htmlpublisher`)
 
 ## 6. Deploy e fechamento
 

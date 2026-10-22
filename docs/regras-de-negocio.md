@@ -47,7 +47,7 @@ Os gatos do jogo ficam em `apps/api/catalog/`: um `gatos.yaml` com `nome` e `cri
 
 ## Identidade
 
-Nome + cookie anônimo, sem login.
+Nome, sem login. O front guarda no `localStorage`, por sala, o `participantId` do aluno e o `presenterToken` do apresentador (`apps/web/src/lib/storage.ts`). Recarregar a página ou escanear o QR de novo volta para a mesma pessoa; os botões do apresentador só aparecem no navegador que criou a sala (em outro, a tela é só "telão").
 
 ## Modelo de dados
 

@@ -9,11 +9,16 @@ Implementados no [`Jenkinsfile`](../Jenkinsfile):
 3. **Testes unitários**: `pnpm test`. Com `CI=true` o Vitest também escreve `apps/*/test-results/junit.xml`, e o step `junit` publica o relatório no Jenkins (precisa do plugin `junit` no `plugins.txt`).
 4. **Integração**: sobe só o `postgres` do compose, aplica as migrations (`prisma migrate deploy`) e roda `pnpm --filter api test:integration` (`*.integration.spec.ts`), com relatório JUnit. Como o Jenkins roda em container, ele entra na rede do compose (`docker network connect`) para alcançar o Postgres pelo nome do serviço; no `cleanup` sai da rede antes do `compose down`.
 5. **Build**: `pnpm build`.
-6. **Docker**: `docker compose build` e `docker compose up -d --wait` (Postgres, API e web). O `--wait` só retorna quando todos os healthchecks passam, então serve de smoke test das imagens e das migrations. No fim, `down --volumes --rmi local` limpa tudo.
+6. **Docker**: `docker compose build` e `docker compose up -d --wait` (Postgres, API e web). O `--wait` só retorna quando todos os healthchecks passam, então serve de smoke test das imagens e das migrations. O healthcheck do `web` também chama `/api/health` através do rewrite do Next, o que confere o caminho web → API. A aplicação fica no ar para o próximo estágio.
+7. **E2E**: `docker compose --profile e2e run e2e` roda o Playwright num container (imagem oficial do Playwright, `e2e/Dockerfile`) dentro da rede do compose, contra `http://web:3000`. Como o `jenkins_home` é um volume, não dá para montar o workspace no container: os relatórios saem com `docker cp` depois que ele termina. O step `junit` publica `e2e/test-results/junit.xml` e o `publishHTML` (plugin `htmlpublisher`) publica o relatório HTML do Playwright, com trace e screenshot dos testes que falham.
 
-Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem (o `web` ainda não tem `test`).
+No fim do pipeline (`post { cleanup }`), `docker compose --profile e2e down --volumes --rmi local` derruba tudo.
 
-Os próximos estágios (E2E e deploy) estão no [roadmap](roadmap.md).
+Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem. O pacote `e2e` tem `typecheck`, mas o script dos testes se chama `e2e` (não `test`) justamente para o Playwright não rodar no estágio de testes unitários.
+
+O relatório do Playwright é um app em JavaScript, e a CSP padrão do Jenkins deixaria a página em branco. Por isso o `jenkins/Dockerfile` relaxa a CSP (`hudson.model.DirectoryBrowserSupport.CSP`), o que só é aceitável num Jenkins local. Mudou o `plugins.txt` ou o `Dockerfile` do Jenkins: `docker compose up -d --build jenkins`.
+
+O próximo estágio (deploy) está no [roadmap](roadmap.md).
 
 ## Jenkins local (Docker Compose)
 

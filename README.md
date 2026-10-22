@@ -18,16 +18,24 @@ Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
 
 ```bash
 pnpm install
-pnpm --filter web dev               # desenvolvimento, em http://localhost:3000
 pnpm generate                       # gera o client do Prisma (depois do install)
 pnpm --filter api dev               # API em http://localhost:3001 (precisa de DATABASE_URL e PRESENTER_PASSWORD)
+pnpm --filter web dev               # front em http://localhost:3000 (repassa /api para a API acima)
 pnpm test                           # testes unitários de todos os pacotes
 pnpm --filter api test:integration  # testes da API contra o Postgres (DATABASE_URL)
 
-docker compose up -d --build        # aplicação completa em containers (web, api e postgres)
+docker compose up -d --build                  # aplicação completa em containers (web, api e postgres)
+docker compose --profile e2e run --rm e2e     # testes E2E (Playwright) contra a aplicação no ar
 ```
 
 A senha do apresentador no compose é `miau` (mude com `PRESENTER_PASSWORD` no `.env`). Endpoints da API em [docs/api.md](docs/api.md).
+
+## Como jogar
+
+1. O apresentador abre **Criar sala**, digita a senha e projeta o telão. Para o QR code funcionar nos celulares, abra pelo IP do notebook na rede (ex.: `http://192.168.0.10:3000`), não por `localhost`.
+2. A turma escaneia o QR (ou digita o código na página inicial) e escolhe um nome.
+3. **Começar julgamento** mostra o primeiro gato; cada um vota **Culpado** ou **Inocente** no celular.
+4. **Revelar veredito** mostra o placar (empate solta o gato) e **Próximo gato** segue. No fim, o resumo com a Prisão da Soneca.
 
 ## Jenkins local
 

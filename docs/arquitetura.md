@@ -18,7 +18,8 @@ flowchart LR
 
 - A API concentra as regras de negócio (estados da sessão, voto único) e expõe REST para sessão, gatos, participantes e votos.
 - Tempo real por **polling**, sem WebSocket.
-- Identidade do aluno: nome + cookie anônimo.
+- O navegador só fala com o `web`; o Next repassa `/api/*` e `/cats/*` para a API (ver [api.md](api.md)).
+- Identidade do aluno: nome + `participantId` guardado no navegador (`localStorage`).
 - Banco: PostgreSQL. A sala vive em memória na API e é gravada no banco a cada ação (snapshot), então sobrevive a um reinício. Hoje roda no Docker Compose; hospedado (Neon / Vercel Postgres) só se a API sair do notebook.
 - Hospedagem da API: a definir. O front vai na Vercel com Root Directory `apps/web`.
 
@@ -30,7 +31,7 @@ flowchart LR
 
     subgraph Stages["Estágios do Jenkinsfile"]
         direction LR
-        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários"] --> S3["Build"] --> SD["Docker<br/>(compose build + smoke)"] --> S4["Integração<br/>(Postgres)"] --> S5["E2E Playwright"] --> S6["Deploy<br/>(só master)"]
+        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários"] --> S4["Integração<br/>(Postgres)"] --> S3["Build"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> S6["Deploy<br/>(só master)"]
     end
 
     JK --> S0
