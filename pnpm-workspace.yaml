@@ -1,6 +1,9 @@
 packages:
   - apps/*
 
+# Rede lenta: alguns metadados do registro (prisma, next) têm dezenas de MB e passam do padrão de 60 s
+fetchTimeout: 300000
+
 allowBuilds:
   '@prisma/engines': true
   '@swc/core': false
