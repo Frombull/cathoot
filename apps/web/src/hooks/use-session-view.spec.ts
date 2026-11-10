@@ -93,6 +93,29 @@ describe("useSessionView", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("refresh durante uma consulta não abre outra em paralelo: consulta de novo logo depois", async () => {
+    let respond: ((response: Response) => void) | undefined;
+    const fetchMock = mockFetch(() => new Promise<Response>((resolve) => (respond = resolve)));
+
+    const { result } = renderHook(() => useSessionView("ABC234"));
+    await tick();
+    act(() => result.current.refresh());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await act(async () => respond?.(json(sessionView())));
+    await tick();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("erro que não é da API também aparece", async () => {
+    vi.stubGlobal("fetch", () => ({ text: () => Promise.reject(new Error("corpo quebrado")) }));
+
+    const { result } = renderHook(() => useSessionView("ABC234"));
+    await tick();
+
+    expect(result.current.error).toMatchObject({ code: "UNKNOWN", message: "Error: corpo quebrado" });
+  });
+
   it("refresh consulta na hora", async () => {
     const views: SessionView[] = [sessionView(), sessionView({ votesReceived: 1 })];
     const fetchMock = mockFetch(() => json(views.shift() ?? sessionView({ votesReceived: 1 })));

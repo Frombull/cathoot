@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { json, mockFetch, sessionView } from "@/test/fixtures";
-import { api, ApiError, errorMessage, normalizeRoomCode } from "./api";
+import { api, ApiError, errorCode, errorMessage, normalizeRoomCode } from "./api";
 
 describe("api", () => {
   it("consulta a sala pelo /api, sem cache, com o participante na query", async () => {
@@ -61,6 +61,26 @@ describe("api", () => {
     mockFetch(() => Promise.reject(new TypeError("Failed to fetch")));
 
     await expect(api.getSession("ABC234")).rejects.toMatchObject({ code: "NETWORK" });
+  });
+
+  it("revelar e próximo vão para a rota da sala com o token", async () => {
+    const fetchMock = mockFetch(() => json(sessionView()));
+
+    await api.reveal("ABC234", "segredo");
+    await api.next("ABC234", "segredo");
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      "/api/sessions/ABC234/reveal",
+      "/api/sessions/ABC234/next",
+    ]);
+    expect(fetchMock.mock.calls[1][1]?.headers).toMatchObject({ "x-presenter-token": "segredo" });
+  });
+});
+
+describe("errorCode", () => {
+  it("devolve o código do ApiError e UNKNOWN para o resto", () => {
+    expect(errorCode(new ApiError("ALREADY_VOTED", "Já votou"))).toBe("ALREADY_VOTED");
+    expect(errorCode(new Error("boom"))).toBe("UNKNOWN");
   });
 });
 

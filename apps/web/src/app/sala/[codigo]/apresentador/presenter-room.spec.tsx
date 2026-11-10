@@ -61,4 +61,88 @@ describe("PresenterRoom", () => {
 
     expect(await screen.findByRole("button", { name: "Ver resumo final" })).toBeTruthy();
   });
+
+  it("no lobby vazio espera a turma escanear", async () => {
+    mockFetch(() => json(sessionView()));
+
+    render(<PresenterRoom code="ABC234" />);
+
+    expect(await screen.findByText("Esperando a turma escanear o QR code...")).toBeTruthy();
+  });
+
+  it("avisa quando a sala não existe e oferece criar outra", async () => {
+    mockFetch(() => json({ code: "SESSION_NOT_FOUND", message: "Sala não encontrada" }, 404));
+
+    render(<PresenterRoom code="ABC234" />);
+
+    expect(await screen.findByRole("heading", { name: "Sala não encontrada" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Criar outra sala" }).getAttribute("href")).toBe("/criar");
+  });
+
+  it("revela o veredito durante a votação", async () => {
+    savePresenterToken("ABC234", "segredo");
+    const fetchMock = mockFetch((method) =>
+      method === "POST"
+        ? json(
+            sessionView({
+              state: "RESULTADO",
+              catNumber: 1,
+              cat: bolinha,
+              participants: ["Ana"],
+              result: { guilty: 1, innocent: 0, verdict: "CULPADO" },
+            }),
+          )
+        : json(sessionView({ state: "VOTANDO", catNumber: 1, cat: bolinha, participants: ["Ana"], votesReceived: 1 })),
+    );
+
+    render(<PresenterRoom code="ABC234" />);
+    await userEvent.click(await screen.findByRole("button", { name: "Revelar veredito" }));
+
+    expect(await screen.findByRole("button", { name: "Próximo gato" })).toBeTruthy();
+    expect(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[0]).toBe("/api/sessions/ABC234/reveal");
+  });
+
+  it("mostra o erro de uma ação que falhou", async () => {
+    savePresenterToken("ABC234", "token-velho");
+    mockFetch((method) =>
+      method === "POST"
+        ? json({ code: "PRESENTER_UNAUTHORIZED", message: "Token inválido" }, 401)
+        : json(sessionView({ participants: ["Ana"] })),
+    );
+
+    render(<PresenterRoom code="ABC234" />);
+    await userEvent.click(await screen.findByRole("button", { name: "Começar julgamento" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe("Senha errada! Só o juiz pode abrir o tribunal.");
+  });
+
+  it("clique duplo (outra aba já avançou) só atualiza a tela, e avisa se a conexão cair", async () => {
+    savePresenterToken("ABC234", "segredo");
+    let clicked = false;
+    const fetchMock = mockFetch((method) => {
+      if (method === "POST") {
+        clicked = true;
+        return json({ code: "INVALID_STATE_TRANSITION", message: "Já começou" }, 409);
+      }
+      return clicked
+        ? new Response("<html>Bad Gateway</html>", { status: 502 })
+        : json(sessionView({ participants: ["Ana"] }));
+    });
+
+    render(<PresenterRoom code="ABC234" />);
+    await userEvent.click(await screen.findByRole("button", { name: "Começar julgamento" }));
+
+    expect(await screen.findByText("Conexão instável, tentando de novo...")).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "GET").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("no fim mostra o resumo e oferece um novo julgamento", async () => {
+    savePresenterToken("ABC234", "segredo");
+    mockFetch(() => json(sessionView({ state: "FIM", summary: { prison: [], mostGuilty: null } })));
+
+    render(<PresenterRoom code="ABC234" />);
+
+    expect((await screen.findByRole("link", { name: "Novo julgamento" })).getAttribute("href")).toBe("/criar");
+  });
 });
