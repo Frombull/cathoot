@@ -27,6 +27,7 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 - No Jenkins e nos Dockerfiles, ativar via `corepack enable` para usar a versão fixada em `packageManager`.
 - Commitar o `pnpm-lock.yaml` e instalar no CI com `pnpm install --frozen-lockfile`.
 - As imagens usam **Node 24** (LTS ativo), que ainda traz o corepack. A partir do Node 25 o corepack não vem mais junto, então localmente o pnpm precisa estar instalado à parte.
+- Exceção: a imagem oficial do Playwright (`e2e/Dockerfile`) já vem com Node 26, sem corepack. Lá o corepack é instalado pelo npm, numa versão fixa, depois de remover o `yarn` global da imagem (os dois instalam um atalho `yarn`).
 - O pnpm bloqueia versões publicadas há pouco tempo (`minimumReleaseAge`) e, ao instalar, pode editar o `pnpm-workspace.yaml` sozinho (`minimumReleaseAgeExclude`, `allowBuilds`). Não aceitar a exceção de idade: fixar uma versão mais antiga. Sempre conferir o diff do `pnpm-workspace.yaml` depois de adicionar dependências.
 - Scripts de build de dependências ficam em `allowBuilds` do `pnpm-workspace.yaml`. O `pnpm` escreve um placeholder ("set this to true or false") que quebra o `pnpm install` no CI (`ERR_PNPM_IGNORED_BUILDS`): trocar sempre por `true` ou `false`. Hoje só `@prisma/engines` é `true`, porque baixa o binário que aplica as migrations; o `prisma` só tem um `preinstall` de verificação (`false`).
 

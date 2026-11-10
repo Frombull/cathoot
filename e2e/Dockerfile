@@ -4,7 +4,10 @@ FROM mcr.microsoft.com/playwright:v1.64.1-noble
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     CI=true
-RUN corepack enable
+# A imagem vem com Node 26, que não traz mais o corepack (saiu do Node no 25): instala pelo npm.
+# O corepack lê o "packageManager" do package.json e usa o mesmo pnpm do resto do monorepo.
+# O yarn global da imagem sai antes, porque o corepack instala um atalho com o mesmo nome
+RUN npm uninstall -g yarn && npm install -g corepack@0.36.0 && corepack enable
 WORKDIR /repo
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
