@@ -8,5 +8,13 @@ export default defineConfig({
     fileParallelism: false,
     reporters: process.env.CI ? ["default", "junit"] : ["default"],
     outputFile: { junit: "./test-results/junit-integration.xml" },
+    // A parte que os unitários deixam de fora (vitest.config.ts): o acesso ao Postgres
+    coverage: {
+      provider: "v8",
+      include: ["src/prisma/**", "src/session/prisma-session-repository.ts"],
+      reporter: ["text", "html", "json-summary"],
+      reportsDirectory: "./coverage-integration",
+      thresholds: { statements: 90, branches: 90, functions: 90, lines: 90 },
+    },
   },
 });

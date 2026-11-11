@@ -5,6 +5,7 @@ dist/
 .env.*
 !.env.example
 coverage/
+coverage-integration/
 playwright-report/
 test-results/
 .DS_Store

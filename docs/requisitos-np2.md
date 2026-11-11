@@ -13,13 +13,13 @@ Resumo do enunciado em [`Projeto_S07_NP2.pdf`](../Projeto_S07_NP2.pdf). Datas de
 ## Checklist
 
 | Requisito | Estado |
-|---|---|
+| --- | --- |
 | Aplicação funcional | ✅ |
 | Jenkins em container (`jenkins/Dockerfile`), configurado por código | ✅ |
 | `Jenkinsfile` com testes e build | ✅ |
 | `Jenkinsfile` com notificação por e-mail | ⬜ |
 | E-mail vindo de variável de ambiente (sem endereço fixo) | ⬜ |
-| Cobertura de testes ≥ 90% | ⬜ (sem ferramenta de cobertura ainda) |
+| Cobertura de testes ≥ 90% | ✅ (Vitest + V8 com `thresholds` de 90%: API 98%, web 98%, integração 100%) |
 | Pacote e relatório de testes como **artefatos** (`archiveArtifacts`) | ⬜ |
 | Imagem publicada no Docker Hub, com link no README | ⬜ |
 | Compose com 4+ containers, comunicação entre 2+ e volumes | ✅ (`postgres`, `api`, `web`, `jenkins`) |

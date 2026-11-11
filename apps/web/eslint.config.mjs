@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Relatório HTML de cobertura (pnpm test:coverage)
+    "coverage/**",
   ]),
 ]);
 

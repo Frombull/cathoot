@@ -38,12 +38,29 @@ pipeline {
 
     stage('Testes unitários') {
       steps {
-        sh 'pnpm test'
+        // Com cobertura: o Vitest reprova o estágio se ela ficar abaixo de 90% (thresholds em apps/*/vitest.config.*)
+        sh 'pnpm test:coverage'
       }
       post {
         always {
           // Com CI=true o Vitest escreve o JUnit em test-results/
           junit 'apps/*/test-results/junit.xml'
+          publishHTML(target: [
+            reportName: 'Cobertura API',
+            reportDir: 'apps/api/coverage',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
+          publishHTML(target: [
+            reportName: 'Cobertura web',
+            reportDir: 'apps/web/coverage',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
         }
       }
     }
@@ -57,11 +74,20 @@ pipeline {
         sh 'docker compose up -d --wait postgres'
         sh 'docker network connect ${COMPOSE_PROJECT_NAME}_default $(hostname)'
         sh 'pnpm --filter api exec prisma migrate deploy'
-        sh 'pnpm --filter api test:integration'
+        // Cobre o acesso ao Postgres, que os unitários deixam de fora (também com mínimo de 90%)
+        sh 'pnpm --filter api test:integration --coverage'
       }
       post {
         always {
           junit testResults: 'apps/api/test-results/junit-integration.xml', allowEmptyResults: true
+          publishHTML(target: [
+            reportName: 'Cobertura integração',
+            reportDir: 'apps/api/coverage-integration',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
         }
         cleanup {
           // A rede só some se o Jenkins sair dela antes

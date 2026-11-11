@@ -23,6 +23,7 @@ pnpm generate                       # gera o client do Prisma (depois do install
 pnpm --filter api dev               # API em http://localhost:3001 (precisa de DATABASE_URL e PRESENTER_PASSWORD)
 pnpm --filter web dev               # front em http://localhost:3000 (repassa /api para a API acima)
 pnpm test                           # testes unitários de todos os pacotes
+pnpm test:coverage                  # os mesmos, com cobertura (falha abaixo de 90%; HTML em apps/*/coverage/)
 pnpm --filter api test:integration  # testes da API contra o Postgres (DATABASE_URL)
 
 docker compose up -d --build                  # aplicação completa em containers (web, api e postgres)
