@@ -5,7 +5,8 @@ pipeline {
     timestamps()
     timeout(time: 30, unit: 'MINUTES')
     disableConcurrentBuilds()
-    buildDiscarder(logRotator(numToKeepStr: '20'))
+    // Histórico dos últimos 20 builds; os artefatos (pacotes e relatórios) só dos últimos 5, para não lotar o disco
+    buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '5'))
   }
 
   environment {
@@ -22,6 +23,9 @@ pipeline {
   stages {
     stage('Install') {
       steps {
+        // O workspace é reaproveitado entre builds: sem isto, um estágio que não rodou deixaria o relatório
+        // do build anterior para os artefatos
+        sh 'rm -rf pacotes apps/*/test-results apps/*/coverage apps/api/coverage-integration e2e/test-results e2e/playwright-report load/test-results'
         sh 'node --version && pnpm --version'
         sh 'pnpm install --frozen-lockfile'
         // Gera o client do Prisma (não é versionado); lint, tipos e build dependem dele
@@ -97,9 +101,17 @@ pipeline {
       }
     }
 
-    stage('Build') {
+    stage('Build + pacote') {
       steps {
         sh 'pnpm build'
+        // pacotes/cathoot-api-<build>.tgz e pacotes/cathoot-web-<build>.tgz
+        sh 'ci/empacotar.sh'
+      }
+      post {
+        success {
+          // fingerprint: o Jenkins anota o hash de cada pacote, para saber de que build ele veio
+          archiveArtifacts artifacts: 'pacotes/*.tgz', fingerprint: true
+        }
       }
     }
 
@@ -181,6 +193,12 @@ pipeline {
   }
 
   post {
+    always {
+      // Relatórios de todos os testes como artefatos, passando ou falhando (só os dos estágios que rodaram)
+      archiveArtifacts allowEmptyArchive: true,
+        artifacts: 'apps/*/test-results/*.xml, apps/*/coverage/**, apps/api/coverage-integration/**, ' +
+                   'e2e/test-results/**, e2e/playwright-report/**, load/test-results/**'
+    }
     cleanup {
       // Derruba o que os estágios Docker, E2E e Carga subiram
       sh 'docker compose --profile e2e --profile load down --volumes --rmi local'

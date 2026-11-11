@@ -20,7 +20,7 @@ Resumo do enunciado em [`Projeto_S07_NP2.pdf`](../Projeto_S07_NP2.pdf). Datas de
 | `Jenkinsfile` com notificação por e-mail | ⬜ |
 | E-mail vindo de variável de ambiente (sem endereço fixo) | ⬜ |
 | Cobertura de testes ≥ 90% | ✅ (Vitest + V8 com `thresholds` de 90%: API 98%, web 98%, integração 100%) |
-| Pacote e relatório de testes como **artefatos** (`archiveArtifacts`) | ⬜ |
+| Pacote e relatório de testes como **artefatos** (`archiveArtifacts`) | ✅ (`pacotes/*.tgz` + JUnit, cobertura, Playwright e k6) |
 | Imagem publicada no Docker Hub, com link no README | ⬜ |
 | Compose com 4+ containers, comunicação entre 2+ e volumes | ✅ (`postgres`, `api`, `web`, `jenkins`) |
 | Compose subindo a imagem do Docker Hub (hoje o Jenkins usa `build: .`) | ⬜ |

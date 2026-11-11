@@ -31,11 +31,12 @@ flowchart LR
 
     subgraph Stages["Estágios do Jenkinsfile"]
         direction LR
-        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários<br/>(cobertura ≥ 90%)"] --> S4["Integração<br/>(Postgres, cobertura ≥ 90%)"] --> S3["Build"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> SC["Carga k6<br/>(60 alunos votando)"] --> S6["Deploy<br/>(só master)"]
+        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários<br/>(cobertura ≥ 90%)"] --> S4["Integração<br/>(Postgres, cobertura ≥ 90%)"] --> S3["Build + pacote"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> SC["Carga k6<br/>(60 alunos votando)"] --> S6["Deploy<br/>(só master)"]
     end
 
     JK --> S0
     S6 --> VERCEL["Vercel"]
+    Stages -->|"post always: pacotes e relatórios"| ART["Artefatos do build"]
     JK -->|"status do build"| GH
     GH -->|"Vercel + Jenkins verdes<br/>e branch atualizada"| MASTER["Merge do PR na master"]
     MASTER --> S6
