@@ -4,7 +4,7 @@
 
 Implementados no [`Jenkinsfile`](../Jenkinsfile):
 
-1. **Install**: apaga os relatórios e pacotes do build anterior (o workspace é reaproveitado, e um estágio que não rodou deixaria um relatório velho para os artefatos), depois `pnpm install --frozen-lockfile` e `pnpm generate` (gera o client do Prisma, de que o lint, os tipos e o build dependem).
+1. **Install**: apaga os relatórios e pacotes do build anterior (o workspace é reaproveitado, e um estágio que não rodou deixaria um relatório velho para os artefatos e o e-mail), depois `pnpm install --frozen-lockfile` e `pnpm generate` (gera o client do Prisma, de que o lint, os tipos e o build dependem).
 2. **Lint + types**: `pnpm lint` e `pnpm typecheck` (`next typegen && tsc --noEmit` no web).
 3. **Testes unitários**: `pnpm test:coverage` (Vitest com `--coverage`, provider V8). Com `CI=true` o Vitest também escreve `apps/*/test-results/junit.xml`, e o step `junit` publica o relatório no Jenkins (precisa do plugin `junit` no `plugins.txt`). A cobertura tem **mínimo de 90%** em linhas, ramos, funções e statements (`thresholds` em `apps/api/vitest.config.ts` e `apps/web/vitest.config.mts`): abaixo disso o comando falha e o estágio fica vermelho. O `publishHTML` publica o relatório de cada app (**Cobertura API** e **Cobertura web**). Ver [Cobertura](#cobertura).
 4. **Integração**: sobe só o `postgres` do compose, aplica as migrations (`prisma migrate deploy`) e roda `pnpm --filter api test:integration --coverage` (`*.integration.spec.ts`), com relatório JUnit e a **Cobertura integração** (também com mínimo de 90%). Como o Jenkins roda em container, ele entra na rede do compose (`docker network connect`) para alcançar o Postgres pelo nome do serviço; no `cleanup` sai da rede antes do `compose down`.
@@ -17,6 +17,7 @@ Implementados no [`Jenkinsfile`](../Jenkinsfile):
 No fim do pipeline, passando ou falhando:
 
 - **Artefatos** (`post { always }`): o `archiveArtifacts` guarda os relatórios de todos os testes que rodaram (JUnit, cobertura, Playwright e k6). Junto com os pacotes do estágio Build, ficam em *Build Artifacts* na página do build. O `buildDiscarder` mantém o histórico dos últimos 20 builds e os artefatos só dos últimos 5.
+- **Notificação por e-mail** (`post { always }`): [`ci/notificar-email.sh`](../ci/notificar-email.sh) manda o resultado do build, com a quantidade de testes e falhas de cada estágio, a cobertura e os links do build, dos testes e dos artefatos. Ver [E-mail](#e-mail).
 - **Limpeza** (`post { cleanup }`): `docker compose --profile e2e --profile load down --volumes --rmi local` derruba tudo.
 
 ### Cobertura
@@ -24,6 +25,13 @@ No fim do pipeline, passando ou falhando:
 - **O que conta:** o código em `apps/api/src` e `apps/web/src`, exceto os próprios testes e o que é gerado ou só faz o *bootstrap*. Ficam de fora o client gerado pelo Prisma (`src/generated/`), o `main.ts` da API (3 linhas que sobem o Nest), o `layout.tsx` do web (o `<html>` com as fontes, que não monta no jsdom e o E2E cobre) e os helpers de teste (`*.contract.ts`, `src/test/`).
 - **Integração:** o acesso ao Postgres (`src/prisma/` e `prisma-session-repository.ts`) não roda sem banco. Por isso ele fica fora da cobertura dos unitários e entra na da integração (`vitest.integration.config.ts`), que mede só esses arquivos. Cada suíte responde pela sua parte, e as duas têm mínimo de 90%.
 - **Local:** `pnpm test:coverage` mostra a tabela no terminal e gera o HTML em `apps/*/coverage/index.html`.
+
+### E-mail
+
+- **Destinatário:** o endereço vem de `NOTIFY_EMAIL`, uma variável de ambiente do container do Jenkins (definida no `jenkins/.env`, que não vai para o git), e nunca fica fixo no código. Sem ela, o script avisa no log e não manda nada.
+- **SMTP:** por padrão o e-mail vai para o **Mailpit** (`smtp://mailpit:1025`), um SMTP de teste que sobe junto com o Jenkins (imagem `axllent/mailpit` do Docker Hub) e mostra os e-mails numa caixa de entrada em <http://localhost:8025>. Para mandar de verdade, aponte `SMTP_URL`, `SMTP_USER` e `SMTP_PASSWORD` para um SMTP real (exemplo do Gmail no `jenkins/.env.example`).
+- **Como envia:** o script monta a mensagem e manda com o `curl`, que fala SMTP e já está na imagem do Jenkins, então não precisa instalar nada.
+- **Por que no `post`:** um estágio normal seria pulado quando outro falha, e o aviso de falha é o mais importante. Um erro no envio deixa o build instável (amarelo) em vez de reprovar um build que passou (`catchError`).
 
 Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:coverage`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem. O pacote `e2e` tem `typecheck`, mas o script dos testes se chama `e2e` (não `test`) justamente para o Playwright não rodar no estágio de testes unitários.
 
@@ -40,16 +48,16 @@ Tudo em [`jenkins/`](../jenkins/), configurado como código:
 - `Dockerfile`: Jenkins LTS + Node 24 (pnpm via `corepack enable`) + Docker CLI com compose e buildx.
 - `plugins.txt`: plugins instalados no build da imagem.
 - `casc.yaml` (Configuration as Code): usuário `admin`, credencial do GitHub e o job Multibranch `cathoot` (via Job DSL). Mudanças feitas pela UI se perdem no restart.
-- `docker-compose.yml`: o serviço do Jenkins, incluído pelo compose da raiz (`include`). Porta 8080, com o socket do Docker do host montado (os builds usam o Docker do host).
+- `docker-compose.yml`: os serviços do Jenkins e do Mailpit, incluídos pelo compose da raiz (`include`). O Jenkins usa a porta 8080, com o socket do Docker do host montado (os builds usam o Docker do host). O Mailpit usa a porta 8025 e guarda os e-mails no volume `mailpit_data`.
 
 ```bash
 cp .env.example .env                   # COMPOSE_PROFILES=jenkins
-cp jenkins/.env.example jenkins/.env   # preencher senha e token do GitHub
-docker compose up -d --build           # sobe o app e o Jenkins
-# http://localhost:8080 (usuário admin)
+cp jenkins/.env.example jenkins/.env   # preencher senha, token do GitHub e NOTIFY_EMAIL
+docker compose up -d --build           # sobe o app, o Jenkins e o Mailpit
+# http://localhost:8080 (usuário admin) e e-mails em http://localhost:8025
 ```
 
-O serviço tem `profiles: ["jenkins"]`: só sobe se `COMPOSE_PROFILES=jenkins` (no `.env` da raiz) ou `--profile jenkins`. Isso é essencial para o CI: dentro do Jenkins não há `.env`, então o `docker compose` dos builds ignora o serviço e nunca tenta subir outro Jenkins.
+Os dois serviços têm `profiles: ["jenkins"]`: só sobem se `COMPOSE_PROFILES=jenkins` (no `.env` da raiz) ou `--profile jenkins`. Isso é essencial para o CI: dentro do Jenkins não há `.env`, então o `docker compose` dos builds ignora esses serviços e nunca tenta subir outro Jenkins.
 
 - Os builds rodam no próprio controller (`agent any`), sem agentes separados.
 - Cada build usa um projeto do compose próprio (`COMPOSE_PROJECT_NAME`) e portas aleatórias (`WEB_PORT=0`, `API_PORT=0`, `POSTGRES_PORT=0`), então builds de branches diferentes não colidem.

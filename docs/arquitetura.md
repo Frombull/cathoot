@@ -37,6 +37,7 @@ flowchart LR
     JK --> S0
     S6 --> VERCEL["Vercel"]
     Stages -->|"post always: pacotes e relatórios"| ART["Artefatos do build"]
+    Stages -->|"post always: ci/notificar-email.sh<br/>(destinatário em NOTIFY_EMAIL)"| MAIL["Mailpit<br/>(ou SMTP real)"]
     JK -->|"status do build"| GH
     GH -->|"Vercel + Jenkins verdes<br/>e branch atualizada"| MASTER["Merge do PR na master"]
     MASTER --> S6

@@ -17,16 +17,18 @@ Resumo do enunciado em [`Projeto_S07_NP2.pdf`](../Projeto_S07_NP2.pdf). Datas de
 | Aplicação funcional | ✅ |
 | Jenkins em container (`jenkins/Dockerfile`), configurado por código | ✅ |
 | `Jenkinsfile` com testes e build | ✅ |
-| `Jenkinsfile` com notificação por e-mail | ⬜ |
-| E-mail vindo de variável de ambiente (sem endereço fixo) | ⬜ |
+| `Jenkinsfile` com notificação por e-mail | ✅ (`post { always }` chama `ci/notificar-email.sh`) |
+| E-mail vindo de variável de ambiente (sem endereço fixo) | ✅ (`NOTIFY_EMAIL` no `jenkins/.env`; chega no Mailpit em <http://localhost:8025>) |
 | Cobertura de testes ≥ 90% | ✅ (Vitest + V8 com `thresholds` de 90%: API 98%, web 98%, integração 100%) |
 | Pacote e relatório de testes como **artefatos** (`archiveArtifacts`) | ✅ (`pacotes/*.tgz` + JUnit, cobertura, Playwright e k6) |
-| Imagem publicada no Docker Hub, com link no README | ⬜ |
-| Compose com 4+ containers, comunicação entre 2+ e volumes | ✅ (`postgres`, `api`, `web`, `jenkins`) |
-| Compose subindo a imagem do Docker Hub (hoje o Jenkins usa `build: .`) | ⬜ |
+| Imagem publicada no Docker Hub, com link no README | ⬜ (falta a conta do Docker Hub) |
+| Compose com 4+ containers, comunicação entre 2+ e volumes | ✅ (`postgres`, `api`, `web`, `jenkins`, `mailpit`; volumes `pgdata`, `jenkins_home`, `mailpit_data`) |
+| Compose com containers do Docker Hub e de Dockerfile local | ✅ do Hub: `postgres`, `mailpit`; local: `api`, `web`. ⬜ falta o Jenkins vir da imagem publicada |
 | README com instalação, execução, uso e funcionalidades | 🟡 |
 | README com a seção "Uso de IA" | 🟡 (base escrita; faltam prompts e partes feitas à mão) |
-| Commits de todos os membros | ⬜ (hoje só um autor) |
+| Commits de todos os membros | 🟡 grupo de 2, só o Marco commita (ver abaixo) |
+
+O grupo tem duas pessoas: o Marco e um colega que ainda não contribuiu. Se continuar assim, o Marco faz e apresenta tudo sozinho. O enunciado pede de 4 a 6 integrantes com commits de todos, e a discrepância de contribuição é eliminatória. Vale alinhar com o professor antes da defesa.
 
 ## Eliminatórios
 

@@ -1,5 +1,5 @@
 # Incluído pelo docker-compose.yml da raiz. O perfil "jenkins" é ligado por COMPOSE_PROFILES no .env
-# da raiz; sem ele (ex.: dentro do próprio Jenkins) este serviço é ignorado.
+# da raiz; sem ele (ex.: dentro do próprio Jenkins) estes serviços são ignorados.
 services:
   jenkins:
     build: .
@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    # Senha do admin, token do GitHub e o e-mail que recebe a notificação (NOTIFY_EMAIL)
     env_file: .env
     # GID do dono do socket do Docker (0 no Mac; no Linux, o do grupo docker; defina DOCKER_GID no .env da raiz)
     group_add:
@@ -16,6 +17,23 @@ services:
       - jenkins_home:/var/jenkins_home
       - ./casc.yaml:/var/jenkins_conf/casc.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - mailpit
+
+  # SMTP de teste: recebe o e-mail que o pipeline manda (ci/notificar-email.sh, em smtp://mailpit:1025)
+  # e mostra numa caixa de entrada em http://localhost:8025. Para e-mail de verdade, ver jenkins/.env.example
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    profiles: ["jenkins"]
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+    environment:
+      # Guarda os e-mails no volume, para não sumirem quando o container é recriado
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - mailpit_data:/data
 
 volumes:
   jenkins_home:
+  mailpit_data:

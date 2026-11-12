@@ -46,11 +46,13 @@ Sobe junto com o app, no mesmo `docker compose up -d`, se o perfil `jenkins` est
 
 ```bash
 cp .env.example .env                   # liga o perfil jenkins
-cp jenkins/.env.example jenkins/.env   # preencher senha e token do GitHub
+cp jenkins/.env.example jenkins/.env   # preencher senha, token do GitHub e NOTIFY_EMAIL
 docker compose up -d --build
 ```
 
-Abre em <http://localhost:8080> (usuário `admin`), já com o job `cathoot` criado. Sem esses `.env`, o compose sobe só o app. Detalhes em [docs/pipeline.md](docs/pipeline.md).
+Abre em <http://localhost:8080> (usuário `admin`), já com o job `cathoot` criado. Sem esses `.env`, o compose sobe só o app.
+
+Cada build testa com cobertura mínima de 90%, guarda os pacotes e os relatórios como artefatos e manda um e-mail com o resultado para o endereço em `NOTIFY_EMAIL`. Por padrão o e-mail cai no Mailpit, um SMTP de teste que sobe junto com o Jenkins, e aparece em <http://localhost:8025>. Detalhes em [docs/pipeline.md](docs/pipeline.md).
 
 ## Uso de IA
 
@@ -66,7 +68,7 @@ O projeto usou IA de forma declarada, como a disciplina pede.
 
 **Dinâmica de uso:** a IA foi usada pelo Marco, individualmente, com a conversa no terminal ou no VS Code. Ele pedia a mudança, o modelo propunha e implementava, e ele revisava o resultado antes de fazer o commit. Os commits só saem quando ele pede.
 
-**A completar pelo grupo** (o professor exige, e é melhor preencher com fatos do que com texto genérico):
+**A completar** (o professor exige, e é melhor preencher com fatos do que com texto genérico):
 
 - [ ] Pelo menos 3 exemplos reais de prompts, dizendo o que foi aceito, ajustado ou descartado
 - [ ] O que foi feito à mão, sem IA (por exemplo, as fotos do catálogo)

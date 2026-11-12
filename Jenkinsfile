@@ -24,7 +24,7 @@ pipeline {
     stage('Install') {
       steps {
         // O workspace é reaproveitado entre builds: sem isto, um estágio que não rodou deixaria o relatório
-        // do build anterior para os artefatos
+        // do build anterior para os artefatos e o e-mail
         sh 'rm -rf pacotes apps/*/test-results apps/*/coverage apps/api/coverage-integration e2e/test-results e2e/playwright-report load/test-results'
         sh 'node --version && pnpm --version'
         sh 'pnpm install --frozen-lockfile'
@@ -198,6 +198,18 @@ pipeline {
       archiveArtifacts allowEmptyArchive: true,
         artifacts: 'apps/*/test-results/*.xml, apps/*/coverage/**, apps/api/coverage-integration/**, ' +
                    'e2e/test-results/**, e2e/playwright-report/**, load/test-results/**'
+
+      // Notificação por e-mail. Fica no post (e não num estágio) para avisar também quando o build falha.
+      // O destinatário vem de NOTIFY_EMAIL, variável de ambiente do container do Jenkins (jenkins/.env)
+      withEnv([
+        "BUILD_STATUS=${currentBuild.currentResult}",
+        "BUILD_DURATION=${currentBuild.durationString.replace(' and counting', '')}"
+      ]) {
+        // Falhar o envio não reprova um build que passou: só o deixa amarelo (instável)
+        catchError(buildResult: 'UNSTABLE', message: 'Não deu para enviar o e-mail') {
+          sh 'ci/notificar-email.sh'
+        }
+      }
     }
     cleanup {
       // Derruba o que os estágios Docker, E2E e Carga subiram

@@ -55,7 +55,7 @@ Ver [visual.md](visual.md) e [visao.md](visao.md).
 
 - [x] Playwright com dois navegadores (apresentador + aluno): criar sala → entrar → votar → ver o veredito, e o jogo inteiro até o resumo (`e2e/`)
 - [x] Estágio **E2E** no Jenkins com relatório HTML/JUnit publicado
-- [ ] Primeiro build verde com os estágios E2E e Carga no Jenkins (imagem do Jenkins já reconstruída com o `htmlpublisher`; falta o push na `dev`)
+- [ ] Primeiro build verde com os estágios E2E e Carga no Jenkins. Em 2026-11-14 o pipeline inteiro passou num Jenkins de teste com a mesma imagem, depois de corrigir o corepack no `e2e/Dockerfile`; falta o push na `dev` para rodar no Jenkins de verdade
 
 ## 6. Deploy e fechamento
 
@@ -70,11 +70,12 @@ Exigências do professor que ainda faltam (checklist completo em [requisitos-np2
 
 - [x] Cobertura de testes ≥ 90%: `@vitest/coverage-v8` em `api` e `web`, limite mínimo (*thresholds*) de 90% e relatório publicado no Jenkins
 - [x] Artefatos no Jenkins: `archiveArtifacts` do pacote (build) e dos relatórios de testes
-- [ ] Notificação por e-mail: script chamado pelo Jenkinsfile (`post`), endereço numa variável de ambiente (nunca fixo) e um SMTP no compose (ex.: MailHog)
-- [ ] Publicar a imagem do Jenkins no Docker Hub e pôr o link no README
+- [x] Notificação por e-mail: `ci/notificar-email.sh` no `post` do Jenkinsfile, endereço em `NOTIFY_EMAIL` e o Mailpit no compose
+- [ ] Pôr o `NOTIFY_EMAIL` no `jenkins/.env` (ver `jenkins/.env.example`) e recriar o Jenkins (`docker compose up -d`)
+- [ ] Publicar a imagem do Jenkins no Docker Hub e pôr o link no README (precisa da conta do Docker Hub)
 - [ ] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
 - [x] Seção "Uso de IA" no README (base escrita; completar prompts e partes feitas à mão)
-- [ ] Commits relevantes de todos os integrantes do grupo (4 a 6 pessoas)
+- [ ] Commits relevantes de todos os integrantes (hoje o grupo é o Marco e um colega que ainda não contribuiu; alinhar com o professor)
 - [ ] Confirmar com o professor se o repositório precisa estar no time da matéria (hoje em `Frombull/cathoot`)
 - [ ] Revisar o repositório, o `Jenkinsfile` e o `docker-compose.yml` em grupo antes da defesa (Q&A, todos respondem)
 
