@@ -31,11 +31,11 @@ flowchart LR
 
     subgraph Stages["Estágios do Jenkinsfile"]
         direction LR
-        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários<br/>(cobertura ≥ 90%)"] --> S4["Integração<br/>(Postgres, cobertura ≥ 90%)"] --> S3["Build + pacote"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> SC["Carga k6<br/>(60 alunos votando)"] --> S6["Deploy<br/>(só master)"]
+        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários<br/>(cobertura ≥ 90%)"] --> S4["Integração<br/>(Postgres, cobertura ≥ 90%)"] --> S3["Build + pacote"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> SC["Carga k6<br/>(60 alunos votando)"] --> S6["Docker Hub<br/>(só master)"]
     end
 
     JK --> S0
-    S6 --> VERCEL["Vercel"]
+    S6 -->|"ci/publicar-jenkins.sh<br/>(arm64)"| HUB["Docker Hub<br/>imagem cathoot-jenkins"]
     Stages -->|"post always: pacotes e relatórios"| ART["Artefatos do build"]
     Stages -->|"post always: ci/notificar-email.sh<br/>(destinatário em NOTIFY_EMAIL)"| MAIL["Mailpit<br/>(ou SMTP real)"]
     JK -->|"status do build"| GH
@@ -44,4 +44,5 @@ flowchart LR
 ```
 
 - Estágios, Jenkins local e integração com o GitHub: [pipeline.md](pipeline.md). Proteções da `master`: [branches.md](branches.md).
-- Quem dispara o deploy (Jenkins com Vercel CLI ou só a integração Git da Vercel): a definir.
+- A entrega contínua é o estágio **Docker Hub**: cada build verde da `master` publica a imagem do Jenkins, que o compose baixa para rodar o pipeline em outra máquina.
+- Deploy do app: a definir. Hoje o front vai para a Vercel pela integração Git dela, fora do Jenkins, e a API só roda no notebook (`docker compose up`).

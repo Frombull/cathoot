@@ -54,6 +54,15 @@ Abre em <http://localhost:8080> (usuário `admin`), já com o job `cathoot` cria
 
 Cada build testa com cobertura mínima de 90%, guarda os pacotes e os relatórios como artefatos e manda um e-mail com o resultado para o endereço em `NOTIFY_EMAIL`. Por padrão o e-mail cai no Mailpit, um SMTP de teste que sobe junto com o Jenkins, e aparece em <http://localhost:8025>. Detalhes em [docs/pipeline.md](docs/pipeline.md).
 
+### Imagem no Docker Hub
+
+A imagem do Jenkins (`jenkins/Dockerfile`) é publicada no Docker Hub para arm64 (Mac com Apple Silicon). Cada build verde da `master` publica sozinho, se o `jenkins/.env` tiver `DOCKERHUB_USER` e `DOCKERHUB_TOKEN`. À mão:
+
+```bash
+docker login
+DOCKERHUB_USER=<usuário> ci/publicar-jenkins.sh   # PUBLICAR=0 só gera a imagem, sem enviar
+```
+
 ## Uso de IA
 
 O projeto usou IA de forma declarada, como a disciplina pede.

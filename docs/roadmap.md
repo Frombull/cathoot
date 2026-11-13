@@ -60,7 +60,8 @@ Ver [visual.md](visual.md) e [visao.md](visao.md).
 ## 6. Deploy e fechamento
 
 - [ ] Decidir onde a API roda (a Vercel só cobre o front). Opção simples: tudo no notebook com `docker compose up`
-- [ ] Estágio **Deploy** (só `master`)
+- [x] Estágio **Docker Hub** (só `master`): a entrega contínua publica a imagem do Jenkins (`ci/publicar-jenkins.sh`, arm64)
+- [ ] Estágio de deploy do app, se a API sair do notebook
 - [x] Teste de carga (k6) para a votação com a turma toda, com estágio **Carga** no Jenkins (`load/`)
 - [ ] Ensaio da apresentação
 
@@ -71,8 +72,10 @@ Exigências do professor que ainda faltam (checklist completo em [requisitos-np2
 - [x] Cobertura de testes ≥ 90%: `@vitest/coverage-v8` em `api` e `web`, limite mínimo (*thresholds*) de 90% e relatório publicado no Jenkins
 - [x] Artefatos no Jenkins: `archiveArtifacts` do pacote (build) e dos relatórios de testes
 - [x] Notificação por e-mail: `ci/notificar-email.sh` no `post` do Jenkinsfile, endereço em `NOTIFY_EMAIL` e o Mailpit no compose
-- [ ] Pôr o `NOTIFY_EMAIL` no `jenkins/.env` (ver `jenkins/.env.example`) e recriar o Jenkins (`docker compose up -d`)
-- [ ] Publicar a imagem do Jenkins no Docker Hub e pôr o link no README (precisa da conta do Docker Hub)
+- [x] Pôr o `NOTIFY_EMAIL` no `jenkins/.env` (ver `jenkins/.env.example`)
+- [ ] Recriar o Jenkins (`docker compose up -d`), para ele pegar o `NOTIFY_EMAIL` e a credencial do Docker Hub e subir o Mailpit
+- [x] Script e estágio que publicam a imagem do Jenkins (`ci/publicar-jenkins.sh` e estágio **Docker Hub**), testados num registry local
+- [ ] Criar a conta e o token do Docker Hub, pôr `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env`, publicar a primeira vez e pôr o link no README
 - [ ] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
 - [x] Seção "Uso de IA" no README (base escrita; completar prompts e partes feitas à mão)
 - [ ] Commits relevantes de todos os integrantes (hoje o grupo é o Marco e um colega que ainda não contribuiu; alinhar com o professor)

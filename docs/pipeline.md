@@ -13,6 +13,7 @@ Implementados no [`Jenkinsfile`](../Jenkinsfile):
 7. **E2E**: `docker compose --profile e2e run e2e` roda o Playwright num container (imagem oficial do Playwright, `e2e/Dockerfile`) dentro da rede do compose, contra `http://web:3000`. Como o `jenkins_home` é um volume, não dá para montar o workspace no container: os relatórios saem com `docker cp` depois que ele termina. O step `junit` publica `e2e/test-results/junit.xml` e o `publishHTML` (plugin `htmlpublisher`) publica o relatório HTML do Playwright, com trace e screenshot dos testes que falham.
 
 8. **Carga**: `docker compose --profile load run load` roda o k6 num container (`load/Dockerfile`), também contra `http://web:3000`, com 60 alunos numa sala só (ver [decisoes-tecnicas.md](decisoes-tecnicas.md)). Os limites (*thresholds*) do `load/votacao.js` reprovam o estágio (o k6 sai com código 99). Os relatórios saem com `docker cp`, como no E2E: o `junit` publica um caso por limite e o `publishHTML` publica o relatório HTML do k6.
+9. **Docker Hub** (só na `master`): publica a imagem do Jenkins no Docker Hub com [`ci/publicar-jenkins.sh`](../ci/publicar-jenkins.sh). É a entrega contínua do projeto: só chega aqui o que passou em todos os estágios anteriores. Pulado se o Jenkins não tiver a conta do Docker Hub. Ver [Docker Hub](#docker-hub).
 
 No fim do pipeline, passando ou falhando:
 
@@ -33,11 +34,18 @@ No fim do pipeline, passando ou falhando:
 - **Como envia:** o script monta a mensagem e manda com o `curl`, que fala SMTP e já está na imagem do Jenkins, então não precisa instalar nada.
 - **Por que no `post`:** um estágio normal seria pulado quando outro falha, e o aviso de falha é o mais importante. Um erro no envio deixa o build instável (amarelo) em vez de reprovar um build que passou (`catchError`).
 
+### Docker Hub
+
+- **O que publica:** a imagem do Jenkins (`jenkins/Dockerfile`), como `<usuário>/cathoot-jenkins`, com as tags `latest` e o número do build. Assim o compose de outra máquina baixa o Jenkins pronto, com os plugins, o Node e o Docker CLI, e roda o pipeline completo.
+- **Arquitetura:** a imagem é arm64 (`docker build --platform linux/arm64`), porque o notebook e o computador do professor são Mac com Apple Silicon. O build é nativo, sem emulação. Para rodar num PC amd64, seria preciso gerar as duas arquiteturas com `docker buildx build --platform linux/amd64,linux/arm64 --push`.
+- **Credencial:** `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env` viram a credencial `dockerhub` pelo `casc.yaml`. O estágio faz o `docker login` com ela (o Jenkins esconde o token no log) e o `docker logout` no fim, para o login não ficar salvo no `jenkins_home`. Sem `DOCKERHUB_USER`, o estágio é pulado.
+- **À mão:** `docker login` e `DOCKERHUB_USER=<usuário> ci/publicar-jenkins.sh`. Para só testar o build, sem publicar: `PUBLICAR=0`.
+
 Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:coverage`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem. O pacote `e2e` tem `typecheck`, mas o script dos testes se chama `e2e` (não `test`) justamente para o Playwright não rodar no estágio de testes unitários.
 
 Os relatórios do Playwright e do k6 são apps em JavaScript, e a CSP padrão do Jenkins deixaria a página em branco. Por isso o `jenkins/Dockerfile` relaxa a CSP (`hudson.model.DirectoryBrowserSupport.CSP`), o que só é aceitável num Jenkins local. Mudou o `plugins.txt` ou o `Dockerfile` do Jenkins: `docker compose up -d --build jenkins`.
 
-O próximo estágio (deploy) está no [roadmap](roadmap.md).
+O deploy do app ainda está em aberto no [roadmap](roadmap.md).
 
 ## Jenkins local (Docker Compose)
 
@@ -47,7 +55,7 @@ Tudo em [`jenkins/`](../jenkins/), configurado como código:
 
 - `Dockerfile`: Jenkins LTS + Node 24 (pnpm via `corepack enable`) + Docker CLI com compose e buildx.
 - `plugins.txt`: plugins instalados no build da imagem.
-- `casc.yaml` (Configuration as Code): usuário `admin`, credencial do GitHub e o job Multibranch `cathoot` (via Job DSL). Mudanças feitas pela UI se perdem no restart.
+- `casc.yaml` (Configuration as Code): usuário `admin`, credenciais do GitHub e do Docker Hub e o job Multibranch `cathoot` (via Job DSL). Mudanças feitas pela UI se perdem no restart.
 - `docker-compose.yml`: os serviços do Jenkins e do Mailpit, incluídos pelo compose da raiz (`include`). O Jenkins usa a porta 8080, com o socket do Docker do host montado (os builds usam o Docker do host). O Mailpit usa a porta 8025 e guarda os e-mails no volume `mailpit_data`.
 
 ```bash

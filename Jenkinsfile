@@ -190,6 +190,33 @@ pipeline {
         }
       }
     }
+
+    stage('Docker Hub') {
+      // Entrega contínua: com tudo verde na master, publica a imagem do Jenkins (jenkins/Dockerfile).
+      // Só roda se o Jenkins tiver a conta do Docker Hub (DOCKERHUB_USER no jenkins/.env)
+      when {
+        allOf {
+          branch 'master'
+          expression { return env.DOCKERHUB_USER?.trim() ? true : false }
+        }
+      }
+      steps {
+        // Credencial criada pelo casc.yaml; o Jenkins esconde o token no log
+        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'HUB_USER', passwordVariable: 'HUB_TOKEN')]) {
+          sh 'echo "$HUB_TOKEN" | docker login --username "$HUB_USER" --password-stdin'
+          // Tags latest e o número do build
+          sh 'DOCKERHUB_USER="$HUB_USER" TAG="$BUILD_NUMBER" ci/publicar-jenkins.sh'
+        }
+      }
+      post {
+        always {
+          // Não deixa o login salvo no jenkins_home
+          sh 'docker logout || true'
+          // A tag com o número do build já está no Hub: tirar a cópia local evita acumular uma por build
+          sh 'docker image rm "$DOCKERHUB_USER/cathoot-jenkins:$BUILD_NUMBER" || true'
+        }
+      }
+    }
   }
 
   post {
