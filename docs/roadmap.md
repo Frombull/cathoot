@@ -77,7 +77,8 @@ Exigências do professor que ainda faltam (checklist completo em [requisitos-np2
 - [x] Script e estágio que publicam a imagem do Jenkins (`ci/publicar-jenkins.sh` e estágio **Docker Hub**), testados num registry local
 - [ ] Criar a conta e o token do Docker Hub, pôr `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env`, publicar a primeira vez e pôr o link no README
 - [ ] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
-- [x] Seção "Uso de IA" no README (base escrita; completar prompts e partes feitas à mão)
+- [x] Seção "Uso de IA" no README, com 6 prompts reais e o que foi aceito, ajustado ou descartado
+- [ ] Conferir a lista "Feito à mão, sem IA" do README
 - [ ] Commits relevantes de todos os integrantes (hoje o grupo é o Marco e um colega que ainda não contribuiu; alinhar com o professor)
 - [ ] Confirmar com o professor se o repositório precisa estar no time da matéria (hoje em `Frombull/cathoot`)
 - [ ] Revisar o repositório, o `Jenkinsfile` e o `docker-compose.yml` em grupo antes da defesa (Q&A, todos respondem)

@@ -24,8 +24,8 @@ Resumo do enunciado em [`Projeto_S07_NP2.pdf`](../Projeto_S07_NP2.pdf). Datas de
 | Imagem publicada no Docker Hub, com link no README | 🟡 `ci/publicar-jenkins.sh` e o estágio **Docker Hub** (só `master`) prontos e testados num registry local; falta a conta do Docker Hub |
 | Compose com 4+ containers, comunicação entre 2+ e volumes | ✅ (`postgres`, `api`, `web`, `jenkins`, `mailpit`; volumes `pgdata`, `jenkins_home`, `mailpit_data`) |
 | Compose com containers do Docker Hub e de Dockerfile local | ✅ do Hub: `postgres`, `mailpit`; local: `api`, `web`. ⬜ falta o Jenkins vir da imagem publicada |
-| README com instalação, execução, uso e funcionalidades | 🟡 |
-| README com a seção "Uso de IA" | 🟡 (base escrita; faltam prompts e partes feitas à mão) |
+| README com instalação, execução, uso e funcionalidades | ✅ (falta só o link do Docker Hub) |
+| README com a seção "Uso de IA" | ✅ modelos, dinâmica, 6 prompts reais e uma resposta descartada. 🟡 conferir a lista do que foi feito à mão |
 | Commits de todos os membros | 🟡 grupo de 2, só o Marco commita (ver abaixo) |
 
 O grupo tem duas pessoas: o Marco e um colega que ainda não contribuiu. Se continuar assim, o Marco faz e apresenta tudo sozinho. O enunciado pede de 4 a 6 integrantes com commits de todos, e a discrepância de contribuição é eliminatória. Vale alinhar com o professor antes da defesa.

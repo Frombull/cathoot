@@ -4,6 +4,19 @@ O Kahoot de crimes de gato: a turma vota se cada gato é **Culpado** ou **Inocen
 
 Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
 
+## Funcionalidades
+
+- **Sala com QR code:** o apresentador cria a sala com uma senha e projeta o telão com o QR code e o código curto da sala (6 caracteres, sem 0/O nem 1/I, que se confundem).
+- **Entrada sem cadastro:** cada aluno entra pelo celular só com o nome, único na sala. Recarregar a página volta para a mesma pessoa.
+- **Votação:** para cada gato (foto, nome e crime), cada aluno vota **Culpado** ou **Inocente**, uma vez e sem trocar. O telão mostra quantos já votaram.
+- **Veredito:** o apresentador revela o placar. Culpado só com maioria; empate ou nenhum voto solta o gato.
+- **Resumo final:** o gato mais culpado e a **Prisão da Soneca**, com todos os condenados.
+- **Catálogo em arquivos:** os gatos ficam em `apps/api/catalog/` (`gatos.yaml` com nome e crime, mais uma imagem por gato), validados por teste.
+- **Aguenta reinício:** a sala é gravada no Postgres a cada ação, e a API a recupera se reiniciar no meio do jogo.
+- **Tema claro e escuro**, com uma animação diferente a cada troca.
+
+E, no pipeline do Jenkins: lint, testes com cobertura mínima de 90%, integração com o Postgres, pacotes, imagens Docker, E2E com dois navegadores, teste de carga com a turma inteira votando, e-mail com o resultado e publicação da imagem do Jenkins no Docker Hub. Detalhes em [docs/pipeline.md](docs/pipeline.md).
+
 ## Stack
 
 - **Frontend:** Next.js + shadcn/ui
@@ -15,7 +28,19 @@ Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
 - **Deploy:** Vercel
 - **CI/CD:** Jenkins
 
-## Como rodar
+## Instalação e execução
+
+**Pré-requisitos:**
+
+- Para rodar tudo em containers: **Docker** com o **Compose v2**. Não precisa instalar mais nada.
+- Para desenvolver fora do Docker: **Node 22 ou mais novo** (as imagens usam o 24) e **pnpm 11**. Até o Node 24, `corepack enable` instala a versão certa do pnpm; a partir do 25, instale o pnpm à parte. Só pnpm: o projeto recusa `npm` e `yarn`.
+
+```bash
+git clone https://github.com/Frombull/cathoot.git && cd cathoot
+docker compose up -d --build        # app completo em http://localhost:3000
+```
+
+Para desenvolver:
 
 ```bash
 pnpm install
@@ -77,10 +102,52 @@ O projeto usou IA de forma declarada, como a disciplina pede.
 
 **Dinâmica de uso:** a IA foi usada pelo Marco, individualmente, com a conversa no terminal ou no VS Code. Ele pedia a mudança, o modelo propunha e implementava, e ele revisava o resultado antes de fazer o commit. Os commits só saem quando ele pede.
 
-**A completar** (o professor exige, e é melhor preencher com fatos do que com texto genérico):
+**Exemplos reais de prompts** (tirados das conversas com o Claude Code, só com a digitação corrigida):
 
-- [ ] Pelo menos 3 exemplos reais de prompts, dizendo o que foi aceito, ajustado ou descartado
-- [ ] O que foi feito à mão, sem IA (por exemplo, as fotos do catálogo)
-- [ ] O uso de IA dos demais integrantes do grupo, se houver
+1. **Ajustado: diagrama da arquitetura.**
+
+   > Faça um mermaid demonstrando como você pretende fazer front, back, ligando eles, a pipeline de CI/CD (que é a matéria da faculdade para a qual esse projeto está sendo desenvolvido)
+
+   O primeiro diagrama separava ambientes e ficou complexo demais. O pedido seguinte foi "acho que está muito complexo, pode remover a questão de ambientes", e a versão simplificada é a de [docs/arquitetura.md](docs/arquitetura.md).
+
+2. **Ajustado: catálogo de gatos.**
+
+   > Sobre os gatos e os crimes deles, seria bom ter algo como uma pasta de imagens de gatos e um txt de crimes para cada um, talvez cada um com um ID 1, 2, 3...
+
+   A IA fez um `.txt` por gato, com o nome na primeira linha e o crime no resto. Pedi "um txt só, talvez um json ou yaml com os crimes, tipo `1: bebeu água do esgoto`", e virou o [`apps/api/catalog/gatos.yaml`](apps/api/catalog/gatos.yaml).
+
+3. **Aceito: troca de tema.**
+
+   > Quero que o toggle de dark e white theme use esses efeitos que têm de exemplo nesse site (...) de maneira que cada clique pegue um desses efeitos: rectangle, circle blur e blinds
+
+   Ficou como pedido em `apps/web/src/components/theme-toggle.tsx`, com View Transitions e sem animação para quem pede menos movimento no sistema.
+
+4. **Descartado em parte: página 404.**
+
+   > Na página de 404, pode deixar só a imagem mesmo centralizada, com o fundo preto e sem header nem nada (...) remova o texto "A página que você procura não existe. Provavelmente foi culpa de um gato."
+
+   O header e o texto que a IA tinha criado saíram. Ficaram a imagem do http.cat, o título e o botão de voltar.
+
+5. **Debugging: Jenkins que não subia.**
+
+   > Eu rodei o docker compose up -d e subiu o web, mas não subiu o Jenkins. Ele deveria subir o Jenkins
+
+   A causa era o Jenkins estar num compose separado. Aceitei a correção (`include` no compose da raiz, com o perfil `jenkins`) depois que a IA mostrou que, sem o perfil, cada build tentaria subir outro Jenkins dentro do próprio Jenkins.
+
+6. **Revisão do que foi gerado.**
+
+   > Dê uma olhada em comentários muito descritivos ou inúteis que sejam muito de IA e resuma ou remova eles.
+
+   Usado para enxugar os comentários do código gerado antes do commit.
+
+**Resposta descartada:** ao instalar o shadcn/ui, o `shadcn init` trocou as fontes e o tema e atualizou pacotes sem relação no lockfile. Foi tudo revertido, e a regra para não repetir está em [docs/decisoes-tecnicas.md](docs/decisoes-tecnicas.md).
+
+**Feito à mão, sem IA:**
+
+- A criação do token do GitHub e dos segredos do Jenkins (`jenkins/.env`), que não passam pela IA.
+- A escolha das referências visuais: as telas de exemplo em `UI Ideas/`, os efeitos da troca de tema e a imagem 404 do http.cat.
+- Os testes do app rodando no Docker local e a decisão do que muda de rumo (os ajustes acima).
+
+- [ ] **A completar:** conferir a lista acima e acrescentar o resto do que foi feito à mão (por exemplo, as fotos e os crimes dos gatos, quando entrarem)
 
 #### Marco Di Toro | 150 | GES
