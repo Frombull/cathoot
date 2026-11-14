@@ -64,6 +64,20 @@ Ver [visual.md](visual.md) e [visao.md](visao.md).
 - [x] Teste de carga (k6) para a votação com a turma toda, com estágio **Carga** no Jenkins (`load/`)
 - [ ] Ensaio da apresentação
 
+## 7. Requisitos da NP2
+
+Exigências do professor que ainda faltam (checklist completo em [requisitos-np2.md](requisitos-np2.md)).
+
+- [ ] Cobertura de testes ≥ 90%: `@vitest/coverage-v8` em `api` e `web`, limite mínimo (*thresholds*) de 90% e relatório publicado no Jenkins
+- [ ] Artefatos no Jenkins: `archiveArtifacts` do pacote (build) e dos relatórios de testes
+- [ ] Notificação por e-mail: script chamado pelo Jenkinsfile (`post`), endereço numa variável de ambiente (nunca fixo) e um SMTP no compose (ex.: MailHog)
+- [ ] Publicar a imagem do Jenkins no Docker Hub e pôr o link no README
+- [ ] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
+- [x] Seção "Uso de IA" no README (base escrita; completar prompts e partes feitas à mão)
+- [ ] Commits relevantes de todos os integrantes do grupo (4 a 6 pessoas)
+- [ ] Confirmar com o professor se o repositório precisa estar no time da matéria (hoje em `Frombull/cathoot`)
+- [ ] Revisar o repositório, o `Jenkinsfile` e o `docker-compose.yml` em grupo antes da defesa (Q&A, todos respondem)
+
 ## Opcionais
 
 Só se a disciplina pedir: SonarQube, Trivy, Prettier, webhook do GitHub. Ver [ideias.md](ideias.md).

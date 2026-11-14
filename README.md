@@ -51,4 +51,24 @@ docker compose up -d --build
 
 Abre em <http://localhost:8080> (usuário `admin`), já com o job `cathoot` criado. Sem esses `.env`, o compose sobe só o app. Detalhes em [docs/pipeline.md](docs/pipeline.md).
 
+## Uso de IA
+
+O projeto usou IA de forma declarada, como a disciplina pede.
+
+**Modelos** (todos pelo Claude Code, com esforço de raciocínio *high*):
+
+- Claude Sonnet 5.5
+- Claude Opus 5.5
+- Claude Fable 5.2
+
+**Para que foram usados:** geração e revisão de código (API, telas), testes (unitários, integração, E2E e carga), Dockerfiles, `docker-compose.yml`, `Jenkinsfile` e a configuração do Jenkins, documentação em `docs/` e debugging. As regras que o Claude Code segue estão em [CLAUDE.md](CLAUDE.md) e [AGENTS.md](AGENTS.md).
+
+**Dinâmica de uso:** a IA foi usada pelo Marco, individualmente, com a conversa no terminal ou no VS Code. Ele pedia a mudança, o modelo propunha e implementava, e ele revisava o resultado antes de fazer o commit. Os commits só saem quando ele pede.
+
+**A completar pelo grupo** (o professor exige, e é melhor preencher com fatos do que com texto genérico):
+
+- [ ] Pelo menos 3 exemplos reais de prompts, dizendo o que foi aceito, ajustado ou descartado
+- [ ] O que foi feito à mão, sem IA (por exemplo, as fotos do catálogo)
+- [ ] O uso de IA dos demais integrantes do grupo, se houver
+
 #### Marco Di Toro | 150 | GES
