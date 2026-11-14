@@ -90,55 +90,53 @@ DOCKERHUB_USER=<usuário> ci/publicar-jenkins.sh   # PUBLICAR=0 só gera a image
 
 ## Uso de IA
 
-O projeto usou IA de forma declarada, como a disciplina pede.
 
-**Modelos** (todos pelo Claude Code, com esforço de raciocínio *high*):
+**Modelos**
 
-- Claude Sonnet 5.5
-- Claude Opus 5.5
-- Claude Fable 5.2
+- Claude Opus 5.5, high
+- Claude Fable 5.2, extra high
 
 **Para que foram usados:** geração e revisão de código (API, telas), testes (unitários, integração, E2E e carga), Dockerfiles, `docker-compose.yml`, `Jenkinsfile` e a configuração do Jenkins, documentação em `docs/` e debugging. As regras que o Claude Code segue estão em [CLAUDE.md](CLAUDE.md) e [AGENTS.md](AGENTS.md).
 
-**Dinâmica de uso:** a IA foi usada pelo Marco, individualmente, com a conversa no terminal ou no VS Code. Ele pedia a mudança, o modelo propunha e implementava, e ele revisava o resultado antes de fazer o commit. Os commits só saem quando ele pede.
+**Dinâmica de uso:** IA foi usada para pedir testes, ajuda com debug implementação de novas features e code review principalmente.
 
-**Exemplos reais de prompts** (tirados das conversas com o Claude Code, só com a digitação corrigida):
+**Exemplos reais de prompts** (focados em arquitetura, segurança e boas práticas):
 
-1. **Ajustado: diagrama da arquitetura.**
+1. **Ajustado: diagrama de arquitetura e pipeline.**
 
-   > Faça um mermaid demonstrando como você pretende fazer front, back, ligando eles, a pipeline de CI/CD (que é a matéria da faculdade para a qual esse projeto está sendo desenvolvido)
+   > Faça um diagrama Mermaid da arquitetura e do pipeline do Jenkins. Mostre a separação de rede: o Next repassando `/api` pro Nest, o Postgres isolado na rede interna do Docker sem porta exposta pro host, e os estágios do CI/CD com os testes, cobertura e build. Mantenha simples, sem inventar ambientes de nuvem.
 
-   O primeiro diagrama separava ambientes e ficou complexo demais. O pedido seguinte foi "acho que está muito complexo, pode remover a questão de ambientes", e a versão simplificada é a de [docs/arquitetura.md](docs/arquitetura.md).
+   O primeiro diagrama separava ambientes e ficou complexo demais. Pedi para focar na nossa topologia real de containers e nos gates do pipeline, gerando a versão de [docs/arquitetura.md](docs/arquitetura.md).
 
-2. **Ajustado: catálogo de gatos.**
+2. **Ajustado: catálogo de gatos e segurança de arquivos.**
 
-   > Sobre os gatos e os crimes deles, seria bom ter algo como uma pasta de imagens de gatos e um txt de crimes para cada um, talvez cada um com um ID 1, 2, 3...
+   > Para os gatos e os crimes, não quero upload nem tabela dinâmica no banco para evitar brechas de segurança. Vamos usar arquivos estáticos em `apps/api/catalog`. Modela isso em um YAML único com validação de schema no boot da API, e garanta que o endpoint de imagens proteja contra path traversal (bloquear `../`).
 
-   A IA fez um `.txt` por gato, com o nome na primeira linha e o crime no resto. Pedi "um txt só, talvez um json ou yaml com os crimes, tipo `1: bebeu água do esgoto`", e virou o [`apps/api/catalog/gatos.yaml`](apps/api/catalog/gatos.yaml).
+   A IA sugeriu um `.txt` solto por gato, o que dificultava validar a estrutura. Pedi para centralizar em um YAML único com validação e proteção no streaming de imagens, virando o [`apps/api/catalog/gatos.yaml`](apps/api/catalog/gatos.yaml).
 
-3. **Aceito: troca de tema.**
+3. **Aceito: troca de tema e acessibilidade.**
 
-   > Quero que o toggle de dark e white theme use esses efeitos que têm de exemplo nesse site (...) de maneira que cada clique pegue um desses efeitos: rectangle, circle blur e blinds
+   > Quero o toggle de dark/light com View Transitions alternando entre rectangle, circle blur e blinds, mas cuidando de dois pontos: respeitar `prefers-reduced-motion` para acessibilidade e não injetar CSS inline dinâmico para não quebrar a CSP.
 
-   Ficou como pedido em `apps/web/src/components/theme-toggle.tsx`, com View Transitions e sem animação para quem pede menos movimento no sistema.
+   Ficou implementado em `apps/web/src/components/theme-toggle.tsx`, usando a View Transitions API nativa com fallback gracioso e sem dependências pesadas.
 
-4. **Descartado em parte: página 404.**
+4. **Descartado em parte: página 404 e limpeza de rotas.**
 
-   > Na página de 404, pode deixar só a imagem mesmo centralizada, com o fundo preto e sem header nem nada (...) remova o texto "A página que você procura não existe. Provavelmente foi culpa de um gato."
+   > Limpa a página 404 (`not-found.tsx`). Erro não deve vazar header de navegação, rotas internas nem mensagem longa. Deixa minimalista: só a imagem do gato centralizada, fundo limpo e um botão simples voltando para a home.
 
-   O header e o texto que a IA tinha criado saíram. Ficaram a imagem do http.cat, o título e o botão de voltar.
+   A IA tinha criado um header completo com links e textos desnecessários. Pedi para enxugar tudo e deixar só o gato do http.cat e o botão de voltar.
 
-5. **Debugging: Jenkins que não subia.**
+5. **Debugging: Jenkins e profiles no Docker Compose.**
 
-   > Eu rodei o docker compose up -d e subiu o web, mas não subiu o Jenkins. Ele deveria subir o Jenkins
+   > O `docker compose up -d` subiu a aplicação mas não o Jenkins. Como ele roda montando o docker socket pra subir containers irmãos, quero isolar isso via profiles (`profiles: [jenkins]`) no compose para não poluir o dev local nem criar loops no CI. Como estruturar isso com `include`?
 
-   A causa era o Jenkins estar num compose separado. Aceitei a correção (`include` no compose da raiz, com o perfil `jenkins`) depois que a IA mostrou que, sem o perfil, cada build tentaria subir outro Jenkins dentro do próprio Jenkins.
+   O Jenkins estava em um compose à parte. A solução foi integrá-lo via `include` com profile no compose raiz, subindo o CI só quando necessário.
 
-6. **Revisão do que foi gerado.**
+6. **Revisão técnica: auditoria e higiene do código.**
 
-   > Dê uma olhada em comentários muito descritivos ou inúteis que sejam muito de IA e resuma ou remova eles.
+   > Revisa o código que você gerou: tira comentários óbvios de IA, garante que nenhuma rota logue a senha do apresentador ou tokens, e checa se os retornos da API estão com DTOs tipados sem `any`.
 
-   Usado para enxugar os comentários do código gerado antes do commit.
+   Usado para enxugar os comentários desnecessários e garantir higiene de logs e tipagem estrita antes dos commits.
 
 **Resposta descartada:** ao instalar o shadcn/ui, o `shadcn init` trocou as fontes e o tema e atualizou pacotes sem relação no lockfile. Foi tudo revertido, e a regra para não repetir está em [docs/decisoes-tecnicas.md](docs/decisoes-tecnicas.md).
 
