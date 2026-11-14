@@ -28,5 +28,7 @@ USER jenkins
 
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false" \
+# O relatório HTML do Playwright é um app em JavaScript e a CSP padrão do Jenkins deixa a página em branco.
+# Esta CSP relaxada libera scripts nos arquivos servidos pelo Jenkins: aceitável só num Jenkins local
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts allow-same-origin; default-src 'self' 'unsafe-inline' data: blob:\"" \
     CASC_JENKINS_CONFIG=/var/jenkins_conf/casc.yaml

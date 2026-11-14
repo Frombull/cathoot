@@ -63,4 +63,7 @@ Qualquer outro `DomainError` vira `400`.
 
 ## Imagens e o front
 
-`imageUrl` é um caminho da própria API (`/cats/1.jpg`). Para o `web` (outra origem) usar sem CORS, o plano é um *rewrite* do Next de `/api/*` e `/cats/*` para a API; isso entra com as telas.
+`imageUrl` é um caminho da própria API (`/cats/1.jpg`). O navegador só fala com o `web`: o Next repassa `/api/*` (sem o prefixo `/api`) e `/cats/*` para a API (*rewrites* em `apps/web/next.config.ts`), então não precisa de CORS e o front nem sabe onde a API está.
+
+- O endereço da API vem de `API_URL` (padrão `http://localhost:3001`) e **fica fixo no build** do Next. Na imagem Docker é um `ARG` com padrão `http://api:3001`, o serviço do compose.
+- O cliente do front fica em `apps/web/src/lib/api.ts`.

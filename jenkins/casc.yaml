@@ -25,6 +25,13 @@ credentials:
               description: "Token do GitHub"
               username: "${GITHUB_USER}"
               password: "${GITHUB_TOKEN}"
+          # Opcional: sem DOCKERHUB_USER no jenkins/.env, o estágio Docker Hub é pulado
+          - usernamePassword:
+              scope: GLOBAL
+              id: "dockerhub"
+              description: "Token do Docker Hub (publica a imagem do Jenkins)"
+              username: "${DOCKERHUB_USER:-}"
+              password: "${DOCKERHUB_TOKEN:-}"
 
 # Sem webhook (o GitHub não alcança o localhost): scan do repositório a cada minuto
 jobs:

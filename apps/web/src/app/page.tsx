@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Gavel, PawPrint, Plus, Users } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Wordmark } from "@/components/wordmark";
+import { PageShell } from "@/components/page-shell";
 
 const destaques = [
   { icon: PawPrint, titulo: "Casos reais", detalhe: "(e alguns nem tanto)" },
@@ -12,26 +11,16 @@ const destaques = [
 
 export default function Home() {
   return (
-    <div className="relative flex flex-1 flex-col overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_40rem_at_85%_10%,var(--glow),transparent_70%)]"
-      />
-
-      <header className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
-        <Link href="/" className="text-4xl sm:text-5xl">
-          <Wordmark />
-        </Link>
-        <nav className="flex items-center gap-2 sm:gap-4">
-          <a
-            href="#como-jogar"
-            className="hidden px-3 font-display text-lg font-medium text-foreground/80 transition hover:text-foreground sm:block"
-          >
-            Como jogar
-          </a>
-          <ThemeToggle />
-        </nav>
-      </header>
+    <PageShell
+      nav={
+        <a
+          href="#como-jogar"
+          className="hidden px-3 font-display text-lg font-medium text-foreground/80 transition hover:text-foreground sm:block"
+        >
+          Como jogar
+        </a>
+      }
+    >
 
       <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center gap-12 px-5 pb-16 pt-8 sm:px-8 md:grid md:grid-cols-2 md:items-center md:gap-8 md:py-12">
         <section className="motion-safe:animate-rise">
@@ -117,6 +106,6 @@ export default function Home() {
           </span>
         </section>
       </main>
-    </div>
+    </PageShell>
   );
 }

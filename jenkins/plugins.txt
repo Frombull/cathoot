@@ -5,3 +5,4 @@ github-branch-source
 pipeline-graph-view
 timestamper
 junit
+htmlpublisher

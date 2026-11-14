@@ -3,9 +3,10 @@ pipeline {
 
   options {
     timestamps()
-    timeout(time: 20, unit: 'MINUTES')
+    timeout(time: 30, unit: 'MINUTES')
     disableConcurrentBuilds()
-    buildDiscarder(logRotator(numToKeepStr: '20'))
+    // Histórico dos últimos 20 builds; os artefatos (pacotes e relatórios) só dos últimos 5, para não lotar o disco
+    buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '5'))
   }
 
   environment {
@@ -22,6 +23,9 @@ pipeline {
   stages {
     stage('Install') {
       steps {
+        // O workspace é reaproveitado entre builds: sem isto, um estágio que não rodou deixaria o relatório
+        // do build anterior para os artefatos e o e-mail
+        sh 'rm -rf pacotes apps/*/test-results apps/*/coverage apps/api/coverage-integration e2e/test-results e2e/playwright-report load/test-results'
         sh 'node --version && pnpm --version'
         sh 'pnpm install --frozen-lockfile'
         // Gera o client do Prisma (não é versionado); lint, tipos e build dependem dele
@@ -38,12 +42,29 @@ pipeline {
 
     stage('Testes unitários') {
       steps {
-        sh 'pnpm test'
+        // Com cobertura: o Vitest reprova o estágio se ela ficar abaixo de 90% (thresholds em apps/*/vitest.config.*)
+        sh 'pnpm test:coverage'
       }
       post {
         always {
           // Com CI=true o Vitest escreve o JUnit em test-results/
           junit 'apps/*/test-results/junit.xml'
+          publishHTML(target: [
+            reportName: 'Cobertura API',
+            reportDir: 'apps/api/coverage',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
+          publishHTML(target: [
+            reportName: 'Cobertura web',
+            reportDir: 'apps/web/coverage',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
         }
       }
     }
@@ -57,11 +78,20 @@ pipeline {
         sh 'docker compose up -d --wait postgres'
         sh 'docker network connect ${COMPOSE_PROJECT_NAME}_default $(hostname)'
         sh 'pnpm --filter api exec prisma migrate deploy'
-        sh 'pnpm --filter api test:integration'
+        // Cobre o acesso ao Postgres, que os unitários deixam de fora (também com mínimo de 90%)
+        sh 'pnpm --filter api test:integration --coverage'
       }
       post {
         always {
           junit testResults: 'apps/api/test-results/junit-integration.xml', allowEmptyResults: true
+          publishHTML(target: [
+            reportName: 'Cobertura integração',
+            reportDir: 'apps/api/coverage-integration',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
         }
         cleanup {
           // A rede só some se o Jenkins sair dela antes
@@ -71,16 +101,24 @@ pipeline {
       }
     }
 
-    stage('Build') {
+    stage('Build + pacote') {
       steps {
         sh 'pnpm build'
+        // pacotes/cathoot-api-<build>.tgz e pacotes/cathoot-web-<build>.tgz
+        sh 'ci/empacotar.sh'
+      }
+      post {
+        success {
+          // fingerprint: o Jenkins anota o hash de cada pacote, para saber de que build ele veio
+          archiveArtifacts artifacts: 'pacotes/*.tgz', fingerprint: true
+        }
       }
     }
 
     stage('Docker') {
       steps {
         sh 'docker compose build'
-        // --wait espera o healthcheck passar (smoke test)
+        // --wait espera o healthcheck passar (smoke test). A aplicação fica no ar para o E2E
         sh 'docker compose up -d --wait'
         sh 'docker compose ps'
       }
@@ -88,10 +126,121 @@ pipeline {
         unsuccessful {
           sh 'docker compose logs --no-color'
         }
+      }
+    }
+
+    stage('E2E') {
+      steps {
+        sh 'docker compose --profile e2e build e2e'
+        // Playwright em container, na rede do compose (BASE_URL=http://web:3000), contra a aplicação do estágio Docker.
+        // Sem --rm: os relatórios são copiados do container depois que ele termina
+        sh 'docker compose --profile e2e run --name ${COMPOSE_PROJECT_NAME}-e2e e2e'
+      }
+      post {
+        always {
+          sh 'rm -rf e2e/test-results e2e/playwright-report'
+          sh 'docker cp ${COMPOSE_PROJECT_NAME}-e2e:/repo/e2e/test-results e2e/ || true'
+          sh 'docker cp ${COMPOSE_PROJECT_NAME}-e2e:/repo/e2e/playwright-report e2e/ || true'
+          junit testResults: 'e2e/test-results/junit.xml', allowEmptyResults: true
+          publishHTML(target: [
+            reportName: 'Playwright',
+            reportDir: 'e2e/playwright-report',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
+        }
+        unsuccessful {
+          sh 'docker compose logs --no-color web api'
+        }
         cleanup {
-          sh 'docker compose down --volumes --rmi local'
+          sh 'docker rm -f ${COMPOSE_PROJECT_NAME}-e2e || true'
         }
       }
+    }
+
+    stage('Carga') {
+      steps {
+        sh 'docker compose --profile load build load'
+        // k6 em container contra o web: a turma inteira entrando, consultando a sala e votando.
+        // Os limites (thresholds) de load/votacao.js reprovam o estágio. Sem --rm, como no E2E
+        sh 'docker compose --profile load run --name ${COMPOSE_PROJECT_NAME}-load load'
+      }
+      post {
+        always {
+          sh 'rm -rf load/test-results'
+          sh 'docker cp ${COMPOSE_PROJECT_NAME}-load:/home/k6/test-results load/ || true'
+          // Um caso de teste por limite
+          junit testResults: 'load/test-results/junit.xml', allowEmptyResults: true
+          publishHTML(target: [
+            reportName: 'k6',
+            reportDir: 'load/test-results',
+            reportFiles: 'relatorio.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true
+          ])
+        }
+        unsuccessful {
+          sh 'docker compose logs --no-color web api'
+        }
+        cleanup {
+          sh 'docker rm -f ${COMPOSE_PROJECT_NAME}-load || true'
+        }
+      }
+    }
+
+    stage('Docker Hub') {
+      // Entrega contínua: com tudo verde na master, publica a imagem do Jenkins (jenkins/Dockerfile).
+      // Só roda se o Jenkins tiver a conta do Docker Hub (DOCKERHUB_USER no jenkins/.env)
+      when {
+        allOf {
+          branch 'master'
+          expression { return env.DOCKERHUB_USER?.trim() ? true : false }
+        }
+      }
+      steps {
+        // Credencial criada pelo casc.yaml; o Jenkins esconde o token no log
+        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'HUB_USER', passwordVariable: 'HUB_TOKEN')]) {
+          sh 'echo "$HUB_TOKEN" | docker login --username "$HUB_USER" --password-stdin'
+          // Tags latest e o número do build
+          sh 'DOCKERHUB_USER="$HUB_USER" TAG="$BUILD_NUMBER" ci/publicar-jenkins.sh'
+        }
+      }
+      post {
+        always {
+          // Não deixa o login salvo no jenkins_home
+          sh 'docker logout || true'
+          // A tag com o número do build já está no Hub: tirar a cópia local evita acumular uma por build
+          sh 'docker image rm "$DOCKERHUB_USER/cathoot-jenkins:$BUILD_NUMBER" || true'
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      // Relatórios de todos os testes como artefatos, passando ou falhando (só os dos estágios que rodaram)
+      archiveArtifacts allowEmptyArchive: true,
+        artifacts: 'apps/*/test-results/*.xml, apps/*/coverage/**, apps/api/coverage-integration/**, ' +
+                   'e2e/test-results/**, e2e/playwright-report/**, load/test-results/**'
+
+      // Notificação por e-mail. Fica no post (e não num estágio) para avisar também quando o build falha.
+      // O destinatário vem de NOTIFY_EMAIL, variável de ambiente do container do Jenkins (jenkins/.env)
+      withEnv([
+        "BUILD_STATUS=${currentBuild.currentResult}",
+        "BUILD_DURATION=${currentBuild.durationString.replace(' and counting', '')}"
+      ]) {
+        // Falhar o envio não reprova um build que passou: só o deixa amarelo (instável)
+        catchError(buildResult: 'UNSTABLE', message: 'Não deu para enviar o e-mail') {
+          sh 'ci/notificar-email.sh'
+        }
+      }
+    }
+    cleanup {
+      // Derruba o que os estágios Docker, E2E e Carga subiram
+      sh 'docker compose --profile e2e --profile load down --volumes --rmi local'
     }
   }
 }

@@ -17,6 +17,13 @@
 ## Telas
 
 - Landing (`/`): feita a partir do mock "Tribunal Felino em Ação". Corta ranking, perfil e login, que não fazem parte do jogo. No lugar do "Entrar" ficam "Criar sala" (apresentador) e o campo do código da sala (aluno). A ilustração do gato juiz (`public/hero-juiz.jpg`) é um recorte do mock, serve de placeholder.
+- Todas as telas usam a mesma moldura (`PageShell`: brilho no fundo, logo e botão de tema).
+- `/criar` e `/entrar`: título grande e um cartão com o formulário. Mensagens de erro com tom de brincadeira ("Senha errada! Só o juiz pode abrir o tribunal.").
+- Telão (`/sala/<código>/apresentador`): no lobby, QR code em fundo branco (para ler bem no tema escuro), o código gigante e os nomes da turma aparecendo como "balões". Na votação, o gato lado a lado com a ficha do crime e a barra de quantos já votaram.
+- Celular do aluno (`/sala/<código>`): o gato empilhado, com a foto limitada a ~38% da altura para os botões **Culpado** (vermelho, martelo) e **Inocente** (verde, aperto de mão) caberem sem rolar.
+- Veredito: carimbo "CULPADO!"/"INOCENTE!" que cai na tela (`animate-stamp`) e, se culpado, grades por cima da foto. Placar em barras.
+- Resumo: "Gato mais culpado" com coroa e a "Prisão da Soneca" com as fotos atrás das grades.
+- Cores do veredito: `--guilty` (vermelho) e `--innocent` (verde), iguais nos dois temas, com texto branco.
 - 404 (`not-found.tsx`): foto do [HTTP Cats](https://http.cat/404) (`public/gato-404.jpg`), sobre fundo preto fixo, sem header, com o título "Esse gato se escondeu." e botão de volta para a landing.
 
 ## Referências

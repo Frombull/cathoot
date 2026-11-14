@@ -43,6 +43,19 @@ describe("criar sala", () => {
 
     await expect(reiniciado.create("miau")).rejects.toMatchObject(erro("ROOM_CODE_EXHAUSTED"));
   });
+
+  it("se o banco falhar, a sala não fica pela metade e o código volta a ficar livre", async () => {
+    const sempreIgual = () => 0;
+    const servico = novoServico(sempreIgual);
+    const save = repo.save.bind(repo);
+    repo.save = () => Promise.reject(new Error("banco fora do ar"));
+
+    await expect(servico.create("miau")).rejects.toThrow("banco fora do ar");
+
+    repo.save = save;
+    const { code } = await servico.create("miau");
+    expect((await servico.view(code)).state).toBe("LOBBY");
+  });
 });
 
 describe("ver a sala", () => {

@@ -11,3 +11,4 @@ UI Ideas
 **/dist
 **/test-results
 **/src/generated
+**/playwright-report
