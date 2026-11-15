@@ -2,9 +2,11 @@
 
 [![Checks da master](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FFrombull%2Fcathoot%2Fcommits%2Fmaster%2Fstatus&query=%24.state&label=checks%20(Vercel%20%2B%20Jenkins))](https://github.com/Frombull/cathoot/commits/master)
 
-O Kahoot de crimes de gato: a turma vota se cada gato é **Culpado** ou **Inocente** pelo crime cometido.
+O Kahoot de crimes de gato, um.. tribumiau!!!1!
 
-Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
+---
+
+### Imagem do Jenkins: **<https://hub.docker.com/r/marcoditoroinatel/cathoot-jenkins>**
 
 ## Funcionalidades
 
