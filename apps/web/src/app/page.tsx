@@ -21,7 +21,6 @@ export default function Home() {
         </a>
       }
     >
-
       <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center gap-12 px-5 pb-16 pt-8 sm:px-8 md:grid md:grid-cols-2 md:items-center md:gap-8 md:py-12">
         <section className="motion-safe:animate-rise">
           <p className="mb-4 inline-block rounded-full bg-accent px-4 py-1 font-display text-sm font-semibold text-accent-foreground">

@@ -76,12 +76,12 @@ Exigências do professor que ainda faltam (checklist completo em [requisitos-np2
 - [x] Recriar o Jenkins (`docker compose up -d`), para ele pegar o `NOTIFY_EMAIL` e subir o Mailpit (o e-mail do build #8 chegou no Mailpit). Recriado de novo em 2026-11-15 com a credencial do Docker Hub
 - [x] Script e estágio que publicam a imagem do Jenkins (`ci/publicar-jenkins.sh` e estágio **Docker Hub**), testados num registry local
 - [x] Criar a conta (`marcoditoroinatel`) e o token do Docker Hub, pôr `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env` e o link no README
-- [ ] Primeira publicação da imagem: PR `dev` → `master` e build verde da `master` (estágio **Docker Hub**)
+- [x] Primeira publicação da imagem: PR `dev` → `master` e build verde da `master` (estágio **Docker Hub**, build #4 da `master`, em 2026-11-15)
 - [x] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
 - [x] Seção "Uso de IA" no README, com 6 prompts reais e o que foi aceito, ajustado ou descartado
-- [ ] Conferir a lista "Feito à mão, sem IA" do README
+- [ ] Conferir a lista "Feito à mão, sem IA" do README e acrescentar o resto do que foi feito à mão (por exemplo, as fotos e os crimes dos gatos, quando entrarem)
 - [ ] Commits relevantes de todos os integrantes (hoje o grupo é o Marco e um colega que ainda não contribuiu; alinhar com o professor)
-- [ ] Confirmar com o professor se o repositório precisa estar no time da matéria (hoje em `Frombull/cathoot`)
+- [ ] Confirmar com o professor se o repositório precisa estar no time da matéria (hoje em `Frombull/cathoot`). Não existe org da turma no GitHub; em 2026-1 os grupos criaram uma org própria
 - [ ] Revisar o repositório, o `Jenkinsfile` e o `docker-compose.yml` em grupo antes da defesa (Q&A, todos respondem)
 
 ## Opcionais

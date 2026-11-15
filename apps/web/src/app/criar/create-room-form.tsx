@@ -21,7 +21,7 @@ export function CreateRoomForm() {
     setError(null);
     try {
       const { code, presenterToken } = await api.createSession(password);
-      // O token autoriza "Próximo" e "Revelar" nesta sala, só neste navegador
+      // O token autoriza Começar, Revelar e Próximo nesta sala, só neste navegador
       savePresenterToken(code, presenterToken);
       router.push(`/sala/${code}/apresentador`);
     } catch (caught) {

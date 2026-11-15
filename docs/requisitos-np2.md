@@ -21,7 +21,7 @@ Resumo do enunciado em [`Projeto_S07_NP2.pdf`](../Projeto_S07_NP2.pdf). Datas de
 | E-mail vindo de variável de ambiente (sem endereço fixo) | ✅ (`NOTIFY_EMAIL` no `jenkins/.env`; chega no Mailpit em <http://localhost:8025>) |
 | Cobertura de testes ≥ 90% | ✅ (Vitest + V8 com `thresholds` de 90%: API 98%, web 98%, integração 100%) |
 | Pacote e relatório de testes como **artefatos** (`archiveArtifacts`) | ✅ (`pacotes/*.tgz` + JUnit, cobertura, Playwright e k6) |
-| Imagem publicada no Docker Hub, com link no README | 🟡 conta `marcoditoroinatel` criada e credencial `dockerhub` no Jenkins (login testado); link no README: <https://hub.docker.com/r/marcoditoroinatel/cathoot-jenkins>. Falta a primeira publicação, que sai no próximo build verde da `master` |
+| Imagem publicada no Docker Hub, com link no README | ✅ <https://hub.docker.com/r/marcoditoroinatel/cathoot-jenkins>, publicada pelo estágio **Docker Hub** a cada build verde da `master` (primeira em 2026-11-15, tags `latest` e `4`) |
 | Compose com 4+ containers, comunicação entre 2+ e volumes | ✅ (`postgres`, `api`, `web`, `jenkins`, `mailpit`; volumes `pgdata`, `jenkins_home`, `mailpit_data`) |
 | Compose com containers do Docker Hub e de Dockerfile local | ✅ do Hub: `jenkins` (a imagem publicada pelo pipeline), `postgres`, `mailpit`; local: `api`, `web` |
 | README com instalação, execução, uso e funcionalidades | ✅ (com o link do Docker Hub) |

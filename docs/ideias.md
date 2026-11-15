@@ -5,15 +5,14 @@ Registro de ideias em aberto e descartadas, para não rediscutir o que já foi d
 ## Sugestões já discutidas (ainda não adotadas)
 
 - Prettier
-- Vitest (planejado, ver [roadmap](roadmap.md))
 - Supertest
 - SonarQube
 - Trivy
 - Webhook do GitHub (hoje é periodic scan; precisaria de ngrok ou smee.io para alcançar o Jenkins local)
-- Relatórios JUnit/HTML do Playwright no Jenkins
+- Gatinho correndo pela tela, só como efeito visual (emoji ou uma sprite sheet única)
 
 ## Descartadas
 
 - Conceito original "Tribunal dos Gatos" (virou o Cathoot em 2026-10-06).
 - WebSocket para tempo real (troca por polling).
-- Upload de imagens (troca por URL).
+- Upload de imagens (troca pelo catálogo em arquivos, `apps/api/catalog/`).

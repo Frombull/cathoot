@@ -36,10 +36,9 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 - NestJS 12 é **ESM** (`"type": "module"`, `module: nodenext`): imports relativos levam a extensão `.js`, mesmo em arquivos `.ts`.
 - Build com `nest build` (saída em `dist/`); `pnpm --filter api dev` roda com watch.
 - Porta `API_PORT` (padrão 3001), escutando em `0.0.0.0` para funcionar em container. O `web` fica na 3000.
-- `GET /health` responde `{"status":"ok"}` e será o healthcheck do container da API.
+- `GET /health` responde `{"status":"ok"}` e é o healthcheck do container da API no compose.
 - Testes com **Vitest** (`src/**/*.spec.ts`), sem plugin do SWC: o Vite 8 já gera o decorator metadata que a injeção de dependência do Nest precisa. Com `CI=true` também sai JUnit em `test-results/`.
 - ESLint 9 + `typescript-eslint` e TypeScript 5, as mesmas linhas do `web`. O `typescript-eslint` está fixo na 8.71.0 (a mesma do `web`).
-
 - Prisma 7 com o adaptador `@prisma/adapter-pg` (sem engine em Rust). O client é gerado em `apps/api/src/generated/prisma` (não versionado): rode `pnpm generate` depois do `pnpm install`. O Jenkins e o Dockerfile fazem isso.
 - Schema e migrations em `apps/api/prisma/`. Criar migration: `DATABASE_URL=... pnpm --filter api exec prisma migrate dev --name <nome>`. A imagem da API roda `prisma migrate deploy` ao subir, antes do `node dist/main.js`.
 - Variáveis da API: `DATABASE_URL` e `PRESENTER_PASSWORD` são obrigatórias (a API não sobe sem elas). No compose ambas têm padrão de desenvolvimento (`miau` para a senha).
