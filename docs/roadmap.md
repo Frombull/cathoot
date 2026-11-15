@@ -59,7 +59,7 @@ Ver [visual.md](visual.md) e [visao.md](visao.md).
 
 ## 6. Deploy e fechamento
 
-- [ ] Decidir onde a API roda (a Vercel só cobre o front). Opção simples: tudo no notebook com `docker compose up`
+- [ ] Decidir onde a API roda (a Vercel só cobre o front). Opção simples: tudo no notebook com `docker compose up`. Hoje o <https://cathoot.com.br> abre a landing, mas criar sala dá 404: o rewrite de `/api` aponta para um endereço local
 - [x] Estágio **Docker Hub** (só `master`): a entrega contínua publica a imagem do Jenkins (`ci/publicar-jenkins.sh`, arm64)
 - [ ] Estágio de deploy do app, se a API sair do notebook
 - [x] Teste de carga (k6) para a votação com a turma toda, com estágio **Carga** no Jenkins (`load/`)
@@ -80,9 +80,10 @@ Exigências do professor que ainda faltam (checklist completo em [requisitos-np2
 - [x] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
 - [x] Seção "Uso de IA" no README, com 6 prompts reais e o que foi aceito, ajustado ou descartado
 - [ ] Conferir a lista "Feito à mão, sem IA" do README e acrescentar o resto do que foi feito à mão (por exemplo, as fotos e os crimes dos gatos, quando entrarem)
-- [ ] Commits relevantes de todos os integrantes (hoje o grupo é o Marco e um colega que ainda não contribuiu; alinhar com o professor)
-- [ ] Confirmar com o professor se o repositório precisa estar no time da matéria (hoje em `Frombull/cathoot`). Não existe org da turma no GitHub; em 2026-1 os grupos criaram uma org própria
-- [ ] Revisar o repositório, o `Jenkinsfile` e o `docker-compose.yml` em grupo antes da defesa (Q&A, todos respondem)
+- [x] Grupo: projeto individual, feito e apresentado só pelo Marco (decidido em 2026-11-15)
+- [ ] Avisar o professor que o projeto é individual (o enunciado pede de 4 a 6 integrantes)
+- [x] Repositório: fica em `Frombull/cathoot` (público), sem org (decidido em 2026-11-15; não existe org da turma no GitHub)
+- [ ] Revisar o repositório, o `Jenkinsfile` e o `docker-compose.yml` antes da defesa (Q&A)
 
 ## Opcionais
 

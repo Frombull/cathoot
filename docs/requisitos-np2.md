@@ -4,7 +4,7 @@ Resumo do enunciado em [`Projeto_S07_NP2.pdf`](../Projeto_S07_NP2.pdf). Datas de
 
 ## Regras gerais
 
-- Sistema original (não pode ser o das aulas) e repositório **público** no GitHub do time da matéria.
+- Sistema original (não pode ser o das aulas) e repositório **público** no GitHub do time da matéria. Não existe org da turma: o repositório fica em `Frombull/cathoot` (decidido em 2026-11-15).
 - Grupos de 4 a 6 pessoas, com **commits relevantes de todos**. Entrega no Teams: link do GitHub e link da imagem no Docker Hub.
 - Jenkins **em container**, sem GitHub Actions. A interface do Jenkins só pode fazer o checkout; as etapas ficam no `Jenkinsfile`.
 - Cobertura de testes **≥ 90%**.
@@ -26,9 +26,9 @@ Resumo do enunciado em [`Projeto_S07_NP2.pdf`](../Projeto_S07_NP2.pdf). Datas de
 | Compose com containers do Docker Hub e de Dockerfile local | ✅ do Hub: `jenkins` (a imagem publicada pelo pipeline), `postgres`, `mailpit`; local: `api`, `web` |
 | README com instalação, execução, uso e funcionalidades | ✅ (com o link do Docker Hub) |
 | README com a seção "Uso de IA" | ✅ modelos, dinâmica, 6 prompts reais e uma resposta descartada. 🟡 conferir a lista do que foi feito à mão |
-| Commits de todos os membros | 🟡 grupo de 2, só o Marco commita (ver abaixo) |
+| Commits de todos os membros | 🟡 projeto individual, só o Marco commita (ver abaixo) |
 
-O grupo tem duas pessoas: o Marco e um colega que ainda não contribuiu. Se continuar assim, o Marco faz e apresenta tudo sozinho. O enunciado pede de 4 a 6 integrantes com commits de todos, e a discrepância de contribuição é eliminatória. Vale alinhar com o professor antes da defesa.
+Decidido em 2026-11-15: o projeto é individual, e o Marco faz e apresenta tudo. O enunciado pede de 4 a 6 integrantes com commits de todos, e a discrepância de contribuição é eliminatória, então vale avisar o professor antes da defesa.
 
 ## Eliminatórios
 
