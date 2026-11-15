@@ -55,7 +55,7 @@ Ver [visual.md](visual.md) e [visao.md](visao.md).
 
 - [x] Playwright com dois navegadores (apresentador + aluno): criar sala → entrar → votar → ver o veredito, e o jogo inteiro até o resumo (`e2e/`)
 - [x] Estágio **E2E** no Jenkins com relatório HTML/JUnit publicado
-- [ ] Primeiro build verde com os estágios E2E e Carga no Jenkins. Em 2026-11-14 o pipeline inteiro passou num Jenkins de teste com a mesma imagem, depois de corrigir o corepack no `e2e/Dockerfile`; falta o push na `dev` para rodar no Jenkins de verdade
+- [x] Primeiro build verde com os estágios E2E e Carga no Jenkins (build #8 da `dev`, em 2026-11-14: 227 testes, 0 falhas), depois de corrigir o corepack no `e2e/Dockerfile`
 
 ## 6. Deploy e fechamento
 
@@ -73,10 +73,11 @@ Exigências do professor que ainda faltam (checklist completo em [requisitos-np2
 - [x] Artefatos no Jenkins: `archiveArtifacts` do pacote (build) e dos relatórios de testes
 - [x] Notificação por e-mail: `ci/notificar-email.sh` no `post` do Jenkinsfile, endereço em `NOTIFY_EMAIL` e o Mailpit no compose
 - [x] Pôr o `NOTIFY_EMAIL` no `jenkins/.env` (ver `jenkins/.env.example`)
-- [ ] Recriar o Jenkins (`docker compose up -d`), para ele pegar o `NOTIFY_EMAIL` e a credencial do Docker Hub e subir o Mailpit
+- [x] Recriar o Jenkins (`docker compose up -d`), para ele pegar o `NOTIFY_EMAIL` e subir o Mailpit (o e-mail do build #8 chegou no Mailpit). Recriado de novo em 2026-11-15 com a credencial do Docker Hub
 - [x] Script e estágio que publicam a imagem do Jenkins (`ci/publicar-jenkins.sh` e estágio **Docker Hub**), testados num registry local
-- [ ] Criar a conta e o token do Docker Hub, pôr `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env`, publicar a primeira vez e pôr o link no README
-- [ ] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
+- [x] Criar a conta (`marcoditoroinatel`) e o token do Docker Hub, pôr `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env` e o link no README
+- [ ] Primeira publicação da imagem: PR `dev` → `master` e build verde da `master` (estágio **Docker Hub**)
+- [x] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
 - [x] Seção "Uso de IA" no README, com 6 prompts reais e o que foi aceito, ajustado ou descartado
 - [ ] Conferir a lista "Feito à mão, sem IA" do README
 - [ ] Commits relevantes de todos os integrantes (hoje o grupo é o Marco e um colega que ainda não contribuiu; alinhar com o professor)

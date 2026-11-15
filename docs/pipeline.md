@@ -36,14 +36,15 @@ No fim do pipeline, passando ou falhando:
 
 ### Docker Hub
 
-- **O que publica:** a imagem do Jenkins (`jenkins/Dockerfile`), como `<usuário>/cathoot-jenkins`, com as tags `latest` e o número do build. Assim o compose de outra máquina baixa o Jenkins pronto, com os plugins, o Node e o Docker CLI, e roda o pipeline completo.
+- **O que publica:** a imagem do Jenkins (`jenkins/Dockerfile`), como [`marcoditoroinatel/cathoot-jenkins`](https://hub.docker.com/r/marcoditoroinatel/cathoot-jenkins), com as tags `latest` e o número do build. Assim o compose de outra máquina baixa o Jenkins pronto, com os plugins, o Node e o Docker CLI, e roda o pipeline completo.
+- **No compose:** o `jenkins/docker-compose.yml` usa `image: marcoditoroinatel/cathoot-jenkins:latest`, sem `build:`. O Jenkins e as imagens oficiais (`postgres`, `mailpit`) vêm do Docker Hub; `api`, `web`, `e2e` e `load` vêm de Dockerfile local. É o mix que o enunciado pede.
 - **Arquitetura:** a imagem é arm64 (`docker build --platform linux/arm64`), porque o notebook e o computador do professor são Mac com Apple Silicon. O build é nativo, sem emulação. Para rodar num PC amd64, seria preciso gerar as duas arquiteturas com `docker buildx build --platform linux/amd64,linux/arm64 --push`.
 - **Credencial:** `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env` viram a credencial `dockerhub` pelo `casc.yaml`. O estágio faz o `docker login` com ela (o Jenkins esconde o token no log) e o `docker logout` no fim, para o login não ficar salvo no `jenkins_home`. Sem `DOCKERHUB_USER`, o estágio é pulado.
 - **À mão:** `docker login` e `DOCKERHUB_USER=<usuário> ci/publicar-jenkins.sh`. Para só testar o build, sem publicar: `PUBLICAR=0`.
 
 Os scripts da raiz (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:coverage`, `pnpm build`) rodam com `pnpm -r`: cada pacote entra nos estágios sozinho se tiver o script, e o `pnpm` pula quem não tem. O pacote `e2e` tem `typecheck`, mas o script dos testes se chama `e2e` (não `test`) justamente para o Playwright não rodar no estágio de testes unitários.
 
-Os relatórios do Playwright e do k6 são apps em JavaScript, e a CSP padrão do Jenkins deixaria a página em branco. Por isso o `jenkins/Dockerfile` relaxa a CSP (`hudson.model.DirectoryBrowserSupport.CSP`), o que só é aceitável num Jenkins local. Mudou o `plugins.txt` ou o `Dockerfile` do Jenkins: `docker compose up -d --build jenkins`.
+Os relatórios do Playwright e do k6 são apps em JavaScript, e a CSP padrão do Jenkins deixaria a página em branco. Por isso o `jenkins/Dockerfile` relaxa a CSP (`hudson.model.DirectoryBrowserSupport.CSP`), o que só é aceitável num Jenkins local. Mudou o `plugins.txt` ou o `Dockerfile` do Jenkins: como o compose sobe a imagem do Docker Hub, gere a local com o mesmo nome antes de recriar (`DOCKERHUB_USER=marcoditoroinatel PUBLICAR=0 ci/publicar-jenkins.sh && docker compose up -d jenkins`). O próximo build verde da `master` publica a mudança.
 
 O deploy do app ainda está em aberto no [roadmap](roadmap.md).
 
@@ -56,7 +57,7 @@ Tudo em [`jenkins/`](../jenkins/), configurado como código:
 - `Dockerfile`: Jenkins LTS + Node 24 (pnpm via `corepack enable`) + Docker CLI com compose e buildx.
 - `plugins.txt`: plugins instalados no build da imagem.
 - `casc.yaml` (Configuration as Code): usuário `admin`, credenciais do GitHub e do Docker Hub e o job Multibranch `cathoot` (via Job DSL). Mudanças feitas pela UI se perdem no restart.
-- `docker-compose.yml`: os serviços do Jenkins e do Mailpit, incluídos pelo compose da raiz (`include`). O Jenkins usa a porta 8080, com o socket do Docker do host montado (os builds usam o Docker do host). O Mailpit usa a porta 8025 e guarda os e-mails no volume `mailpit_data`.
+- `docker-compose.yml`: os serviços do Jenkins (pela imagem publicada no Docker Hub) e do Mailpit, incluídos pelo compose da raiz (`include`). O Jenkins usa a porta 8080, com o socket do Docker do host montado (os builds usam o Docker do host). O Mailpit usa a porta 8025 e guarda os e-mails no volume `mailpit_data`.
 
 ```bash
 cp .env.example .env                   # COMPOSE_PROFILES=jenkins

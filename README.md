@@ -1,5 +1,7 @@
 # Cathoot
 
+[![Checks da master](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FFrombull%2Fcathoot%2Fcommits%2Fmaster%2Fstatus&query=%24.state&label=checks%20(Vercel%20%2B%20Jenkins))](https://github.com/Frombull/cathoot/commits/master)
+
 O Kahoot de crimes de gato: a turma vota se cada gato é **Culpado** ou **Inocente** pelo crime cometido.
 
 Projeto de **S107 - Gerência de Configuração e Evolução de Software**.
@@ -81,7 +83,9 @@ Cada build testa com cobertura mínima de 90%, guarda os pacotes e os relatório
 
 ### Imagem no Docker Hub
 
-A imagem do Jenkins (`jenkins/Dockerfile`) é publicada no Docker Hub para arm64 (Mac com Apple Silicon). Cada build verde da `master` publica sozinho, se o `jenkins/.env` tiver `DOCKERHUB_USER` e `DOCKERHUB_TOKEN`. À mão:
+Imagem do Jenkins: **<https://hub.docker.com/r/marcoditoroinatel/cathoot-jenkins>**
+
+Ela é gerada a partir do `jenkins/Dockerfile`, para arm64 (Mac com Apple Silicon). O compose sobe o Jenkins por ela: em outra máquina, o `docker compose up` baixa o Jenkins pronto do Docker Hub, enquanto `api` e `web` são montados pelos Dockerfiles locais. Cada build verde da `master` publica sozinho, se o `jenkins/.env` tiver `DOCKERHUB_USER` e `DOCKERHUB_TOKEN`. À mão:
 
 ```bash
 docker login
