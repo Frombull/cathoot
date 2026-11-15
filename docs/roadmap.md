@@ -73,10 +73,11 @@ Exigências do professor que ainda faltam (checklist completo em [requisitos-np2
 - [x] Artefatos no Jenkins: `archiveArtifacts` do pacote (build) e dos relatórios de testes
 - [x] Notificação por e-mail: `ci/notificar-email.sh` no `post` do Jenkinsfile, endereço em `NOTIFY_EMAIL` e o Mailpit no compose
 - [x] Pôr o `NOTIFY_EMAIL` no `jenkins/.env` (ver `jenkins/.env.example`)
-- [x] Recriar o Jenkins (`docker compose up -d`), para ele pegar o `NOTIFY_EMAIL` e subir o Mailpit (o e-mail do build #8 chegou no Mailpit). Recriar de novo quando entrar a credencial do Docker Hub
+- [x] Recriar o Jenkins (`docker compose up -d`), para ele pegar o `NOTIFY_EMAIL` e subir o Mailpit (o e-mail do build #8 chegou no Mailpit). Recriado de novo em 2026-11-15 com a credencial do Docker Hub
 - [x] Script e estágio que publicam a imagem do Jenkins (`ci/publicar-jenkins.sh` e estágio **Docker Hub**), testados num registry local
-- [ ] Criar a conta e o token do Docker Hub, pôr `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env`, publicar a primeira vez e pôr o link no README
-- [ ] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
+- [x] Criar a conta (`marcoditoroinatel`) e o token do Docker Hub, pôr `DOCKERHUB_USER` e `DOCKERHUB_TOKEN` no `jenkins/.env` e o link no README
+- [ ] Primeira publicação da imagem: PR `dev` → `master` e build verde da `master` (estágio **Docker Hub**)
+- [x] Compose subindo o Jenkins pela imagem do Docker Hub (`image:` em vez de `build: .`), mantendo `api` e `web` com Dockerfile local
 - [x] Seção "Uso de IA" no README, com 6 prompts reais e o que foi aceito, ajustado ou descartado
 - [ ] Conferir a lista "Feito à mão, sem IA" do README
 - [ ] Commits relevantes de todos os integrantes (hoje o grupo é o Marco e um colega que ainda não contribuiu; alinhar com o professor)

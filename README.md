@@ -81,7 +81,9 @@ Cada build testa com cobertura mínima de 90%, guarda os pacotes e os relatório
 
 ### Imagem no Docker Hub
 
-A imagem do Jenkins (`jenkins/Dockerfile`) é publicada no Docker Hub para arm64 (Mac com Apple Silicon). Cada build verde da `master` publica sozinho, se o `jenkins/.env` tiver `DOCKERHUB_USER` e `DOCKERHUB_TOKEN`. À mão:
+Imagem do Jenkins: **<https://hub.docker.com/r/marcoditoroinatel/cathoot-jenkins>**
+
+Ela é gerada a partir do `jenkins/Dockerfile`, para arm64 (Mac com Apple Silicon). O compose sobe o Jenkins por ela: em outra máquina, o `docker compose up` baixa o Jenkins pronto do Docker Hub, enquanto `api` e `web` são montados pelos Dockerfiles locais. Cada build verde da `master` publica sozinho, se o `jenkins/.env` tiver `DOCKERHUB_USER` e `DOCKERHUB_TOKEN`. À mão:
 
 ```bash
 docker login

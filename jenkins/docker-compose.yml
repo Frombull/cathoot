@@ -2,8 +2,7 @@
 # da raiz; sem ele (ex.: dentro do próprio Jenkins) estes serviços são ignorados.
 services:
   jenkins:
-    build: .
-    image: cathoot-jenkins
+    image: marcoditoroinatel/cathoot-jenkins:latest
     profiles: ["jenkins"]
     restart: unless-stopped
     ports:
