@@ -4,7 +4,6 @@
 - **Nada de fonte monoespaçada** nem visual sério/corporativo.
 - Fontes (2026-10-19): **Fredoka** nos títulos e **Nunito** no texto, instaladas pelo pnpm (`@fontsource-variable/*`) em vez de `next/font/google`, para o build não depender de rede externa.
 - Cores vibrantes e animações leves.
-- O gatinho correndo pela tela pode ser só efeito visual, com emoji ou uma sprite sheet única.
 
 ## Temas claro e escuro
 

@@ -4,11 +4,14 @@
 **/*.tsbuildinfo
 **/next-env.d.ts
 .git
+.github
 docs
-jenkins
+cathoot-assets
 UI Ideas
 *.md
 **/dist
+**/coverage
+**/coverage-integration
 **/test-results
 **/src/generated
 **/playwright-report

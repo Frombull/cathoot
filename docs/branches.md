@@ -25,9 +25,8 @@ Não fazer commit direto na `master` local: ela só deve seguir a `origin/master
 ## Proteções no GitHub
 
 - **`master`**: protegida (vale também para o admin).
-  - Só entra por PR, com os checks **`Vercel`** e **`continuous-integration/jenkins/branch`** passando e a branch atualizada antes do merge.
+  - Só entra por PR, com os checks **`Vercel`** e **`ci`** (GitHub Actions) passando e a branch atualizada antes do merge.
   - O check `Vercel` fica `success` mesmo quando o `ignoreCommand` cancela o build.
-  - O check do Jenkins só chega com o Jenkins local ligado; desligado, nenhum PR fica mergeável.
   - Sem push direto, force push nem deleção.
 - **`dev`**: push direto liberado, sem check obrigatório. Só bloqueia force push e deleção.
 - Mensagens de commit no estilo Conventional Commits (`feat:`, `fix:`, `docs:`...).

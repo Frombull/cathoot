@@ -15,4 +15,4 @@ Para adicionar um gato: coloque a imagem aqui e acrescente o bloco no `gatos.yam
 
 As fotos dos gatos 1 a 3 são provisórias (baixadas do [Cataas](https://cataas.com)): troque pelos memes de verdade, mantendo o número.
 
-Outros arquivos (como este README) são ignorados. Um teste (`catalog.spec.ts`) falha se algum gato estiver sem imagem, sem nome ou sem crime, ou se houver imagem sem bloco no YAML, então o pipeline avisa antes de a turma ver um gato quebrado.
+Outros arquivos (como este README) são ignorados. Um teste (`catalog.spec.ts`) falha se algum gato estiver sem imagem, sem nome ou sem crime, ou se houver imagem sem bloco no YAML, então o CI avisa antes de a turma ver um gato quebrado.

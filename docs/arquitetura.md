@@ -6,8 +6,8 @@
 flowchart LR
     APR["Apresentador<br/>(senha + QR code)"]
     ALU["Alunos<br/>(QR ou código da sala, só nome)"]
-    WEB["apps/web<br/>Next.js + shadcn/ui"]
-    API["apps/api<br/>NestJS + Prisma"]
+    WEB["apps/web<br/>Next.js + shadcn/ui<br/>(Vercel)"]
+    API["apps/api<br/>NestJS + Prisma<br/>(Docker)"]
     DB[("PostgreSQL")]
 
     APR --> WEB
@@ -20,29 +20,21 @@ flowchart LR
 - Tempo real por **polling**, sem WebSocket.
 - O navegador só fala com o `web`; o Next repassa `/api/*` e `/cats/*` para a API (ver [api.md](api.md)).
 - Identidade do aluno: nome + `participantId` guardado no navegador (`localStorage`).
-- Banco: PostgreSQL. A sala vive em memória na API e é gravada no banco a cada ação (snapshot), então sobrevive a um reinício. Hoje roda no Docker Compose; hospedado (Neon / Vercel Postgres) só se a API sair do notebook.
-- Hospedagem da API: a definir. O front vai na Vercel com Root Directory `apps/web`.
+- Banco: PostgreSQL. A sala vive em memória na API e é gravada no banco a cada ação (snapshot), então sobrevive a um reinício.
+- Deploy: `apps/web` vai na Vercel (Root Directory `apps/web`) e `apps/api` + `postgres` sobem via Docker Compose (`docker compose up -d --build api`).
 
-## Pipeline CI/CD
+## CI
 
 ```mermaid
 flowchart LR
-    GH["GitHub<br/>(commit na dev / PR para master)"] -->|"periodic scan (1 min)"| JK["Jenkins local<br/>(Docker Compose)<br/>Multibranch Pipeline"]
-
-    subgraph Stages["Estágios do Jenkinsfile"]
-        direction LR
-        S0["Install"] --> S1["Lint + types"] --> S2["Testes unitários<br/>(cobertura ≥ 90%)"] --> S4["Integração<br/>(Postgres, cobertura ≥ 90%)"] --> S3["Build + pacote"] --> SD["Docker<br/>(compose build + smoke)"] --> S5["E2E Playwright<br/>(container na rede do compose)"] --> SC["Carga k6<br/>(60 alunos votando)"] --> S6["Docker Hub<br/>(só master)"]
-    end
-
-    JK --> S0
-    S6 -->|"ci/publicar-jenkins.sh<br/>(arm64)"| HUB["Docker Hub<br/>imagem cathoot-jenkins"]
-    Stages -->|"post always: pacotes e relatórios"| ART["Artefatos do build"]
-    Stages -->|"post always: ci/notificar-email.sh<br/>(destinatário em NOTIFY_EMAIL)"| MAIL["Mailpit<br/>(ou SMTP real)"]
-    JK -->|"status do build"| GH
-    GH -->|"Vercel + Jenkins verdes<br/>e branch atualizada"| MASTER["Merge do PR na master"]
-    MASTER --> S6
+    GH["GitHub<br/>(push em dev/master ou PR para master)"] --> CI["GitHub Actions (ci)"]
+    CI --> S0["Install + prisma generate"]
+    S0 --> S1["Lint + typecheck"]
+    S1 --> S2["Testes unitários"]
+    S2 --> S3["Integração (Postgres)"]
+    S3 --> S4["Build"]
+    GH -->|"checks verdes na master"| VERCEL["Vercel (apps/web)"]
 ```
 
-- Estágios, Jenkins local e integração com o GitHub: [pipeline.md](pipeline.md). Proteções da `master`: [branches.md](branches.md).
-- A entrega contínua é o estágio **Docker Hub**: cada build verde da `master` publica a imagem do Jenkins, que o compose baixa para rodar o pipeline em outra máquina.
-- Deploy do app: a definir. Hoje o front vai para a Vercel pela integração Git dela, fora do Jenkins, e a API só roda no notebook (`docker compose up`).
+- Workflow em [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
+- Proteções da `master`: [branches.md](branches.md).

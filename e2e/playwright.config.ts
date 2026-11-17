@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Roda contra a aplicação já no ar (docker compose). No Jenkins, o serviço "e2e" do compose
+// Roda contra a aplicação já no ar (docker compose). No serviço "e2e" do compose,
 // alcança o web pelo nome: BASE_URL=http://web:3000.
 export default defineConfig({
   testDir: "./tests",
@@ -11,7 +11,6 @@ export default defineConfig({
   outputDir: "test-results/artifacts",
   reporter: [
     ["list"],
-    ["junit", { outputFile: "test-results/junit.xml" }],
     ["html", { outputFolder: "playwright-report", open: "never" }],
   ],
   use: {
