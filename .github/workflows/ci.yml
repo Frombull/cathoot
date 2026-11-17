@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.6-alpine
+        env:
+          POSTGRES_USER: cathoot
+          POSTGRES_PASSWORD: cathoot
+          POSTGRES_DB: cathoot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cathoot -d cathoot"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Integration tests
+        env:
+          DATABASE_URL: postgresql://cathoot:cathoot@localhost:5432/cathoot
+        run: |
+          pnpm --filter api exec prisma migrate deploy
+          pnpm --filter api test:integration
+
+      - name: Build
+        run: pnpm build

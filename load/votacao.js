@@ -129,12 +129,9 @@ export function presenter({ code, presenterToken }) {
   gameFinished.add(true);
 }
 
-const escapeXml = (text) =>
-  text.replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]);
-
 const ms = (value) => (value === undefined ? "-" : `${Math.round(value)} ms`);
 
-// Resumo curto no console, JUnit com um caso por limite (thresholds) e o JSON completo
+// Resumo curto no console e o JSON completo
 export function handleSummary(data) {
   const limits = Object.entries(data.metrics)
     .flatMap(([metric, { thresholds }]) =>
@@ -155,23 +152,8 @@ export function handleSummary(data) {
   lines.push(`  falhas HTTP ${(failed * 100).toFixed(2).replace(".", ",")}%\n`, "Limites:");
   for (const { name, ok } of limits) lines.push(`  ${ok ? "ok   " : "FALHOU"} ${name}`);
 
-  const failures = limits.filter((l) => !l.ok).length;
-  const cases = limits.map(({ name, ok }) =>
-    ok
-      ? `    <testcase classname="carga" name="${escapeXml(name)}"/>`
-      : `    <testcase classname="carga" name="${escapeXml(name)}"><failure message="limite não atingido"/></testcase>`,
-  );
-  const junit = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    `<testsuites><testsuite name="carga" tests="${limits.length}" failures="${failures}">`,
-    ...cases,
-    "</testsuite></testsuites>",
-    "",
-  ].join("\n");
-
   return {
     stdout: lines.join("\n") + "\n\n",
-    "test-results/junit.xml": junit,
     "test-results/summary.json": JSON.stringify(data, null, 2),
   };
 }

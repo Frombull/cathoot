@@ -27,4 +27,4 @@ COPY --from=build --chown=node:node /repo/apps/api/catalog apps/api/catalog
 WORKDIR /repo/apps/api
 USER node
 EXPOSE 3001
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && exec node dist/main.js"]

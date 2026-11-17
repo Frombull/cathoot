@@ -8,8 +8,8 @@
 - Infra local: Docker Compose
 - E2E: Playwright
 - Carga: k6
-- Deploy: Vercel
-- CI/CD: Jenkins
+- Deploy: Vercel (`apps/web`) e servidor com Docker (`apps/api` + `postgres`)
+- CI: GitHub Actions
 
 ## Estrutura
 
@@ -24,7 +24,7 @@
 Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 
 - Travado por `packageManager` e `engines` no `package.json`, `engine-strict=true` no `.npmrc` e `preinstall: only-allow pnpm`.
-- No Jenkins e nos Dockerfiles, ativar via `corepack enable` para usar a versão fixada em `packageManager`.
+- No CI e nos Dockerfiles, ativar via `corepack enable` para usar a versão fixada em `packageManager`.
 - Commitar o `pnpm-lock.yaml` e instalar no CI com `pnpm install --frozen-lockfile`.
 - As imagens usam **Node 24** (LTS ativo), que ainda traz o corepack. A partir do Node 25 o corepack não vem mais junto, então localmente o pnpm precisa estar instalado à parte.
 - Exceção: a imagem oficial do Playwright (`e2e/Dockerfile`) já vem com Node 26, sem corepack. Lá o corepack é instalado pelo npm, numa versão fixa, depois de remover o `yarn` global da imagem (os dois instalam um atalho `yarn`).
@@ -37,9 +37,9 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 - Build com `nest build` (saída em `dist/`); `pnpm --filter api dev` roda com watch.
 - Porta `API_PORT` (padrão 3001), escutando em `0.0.0.0` para funcionar em container. O `web` fica na 3000.
 - `GET /health` responde `{"status":"ok"}` e é o healthcheck do container da API no compose.
-- Testes com **Vitest** (`src/**/*.spec.ts`), sem plugin do SWC: o Vite 8 já gera o decorator metadata que a injeção de dependência do Nest precisa. Com `CI=true` também sai JUnit em `test-results/`.
+- Testes com **Vitest** (`src/**/*.spec.ts`), sem plugin do SWC: o Vite 8 já gera o decorator metadata que a injeção de dependência do Nest precisa.
 - ESLint 9 + `typescript-eslint` e TypeScript 5, as mesmas linhas do `web`. O `typescript-eslint` está fixo na 8.71.0 (a mesma do `web`).
-- Prisma 7 com o adaptador `@prisma/adapter-pg` (sem engine em Rust). O client é gerado em `apps/api/src/generated/prisma` (não versionado): rode `pnpm generate` depois do `pnpm install`. O Jenkins e o Dockerfile fazem isso.
+- Prisma 7 com o adaptador `@prisma/adapter-pg` (sem engine em Rust). O client é gerado em `apps/api/src/generated/prisma` (não versionado): rode `pnpm generate` depois do `pnpm install`. O CI e o Dockerfile fazem isso.
 - Schema e migrations em `apps/api/prisma/`. Criar migration: `DATABASE_URL=... pnpm --filter api exec prisma migrate dev --name <nome>`. A imagem da API roda `prisma migrate deploy` ao subir, antes do `node dist/main.js`.
 - Variáveis da API: `DATABASE_URL` e `PRESENTER_PASSWORD` são obrigatórias (a API não sobe sem elas). No compose ambas têm padrão de desenvolvimento (`miau` para a senha).
 - A API guarda cada sala em memória e grava um snapshot no Postgres a cada ação (ver [regras-de-negocio.md](regras-de-negocio.md)). Isso exige **uma só instância** da API.
@@ -62,7 +62,7 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 
 ### Testes do front
 
-- Vitest + Testing Library + jsdom (`vitest.config.mts`, `src/**/*.spec.ts(x)`), JUnit em `test-results/` com `CI=true`, como na API. O `@types/node` do `web` foi para a 24 (o Vitest 5 pede 22+ e as imagens rodam Node 24).
+- Vitest + Testing Library + jsdom (`vitest.config.mts`, `src/**/*.spec.ts(x)`), como na API. O `@types/node` do `web` foi para a 24 (o Vitest 5 pede 22+ e as imagens rodam Node 24).
 - Cobrem o cliente da API, o armazenamento local, o polling (com relógio falso) e as telas do aluno e do apresentador com `fetch` falso.
 
 ## E2E (`e2e/`)
@@ -81,7 +81,7 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
   - Cada um vota em até 3 s depois que o gato aparece.
   - O apresentador espera todo mundo entrar e votar, revela e passa para o próximo gato até o `FIM`.
   - Passa pelo `web` (rewrite do Next), o mesmo caminho dos navegadores. Lê o número de gatos da própria sala, então não depende do catálogo.
-- O estágio reprova se algum destes limites estourar:
+- O teste reprova (k6 sai com código 99) se algum destes limites estourar:
   - Falhas HTTP: menos de 1%.
   - p95 da consulta: abaixo de 500 ms.
   - p95 de entrar e de votar: abaixo de 1 s.
@@ -89,7 +89,7 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
   - Votos: todos contados em todos os gatos.
   - Jogo: precisa chegar ao fim.
 - Se o jogo trava, o apresentador aborta o teste (`exec.test.abort`), senão os alunos ficariam no polling até o `maxDuration`.
-- **Só módulos embutidos** (`k6/http`, `k6/metrics`...). O k6 2 tenta baixar um binário sob medida quando vê um import desconhecido, e o `k6/summary` não existe. Por isso o resumo em português e o JUnit (um caso por limite) são escritos à mão no `handleSummary`.
+- **Só módulos embutidos** (`k6/http`, `k6/metrics`...). O k6 2 tenta baixar um binário sob medida quando vê um import desconhecido, e o `k6/summary` não existe. Por isso o resumo em português é escrito à mão no `handleSummary`.
 - O relatório HTML é o *web dashboard* do k6, exportado no fim (`K6_WEB_DASHBOARD_EXPORT`), sem nada externo. Em testes de poucos segundos o k6 pula o relatório por falta de dados.
 - Rodar localmente: `docker compose up -d --build` e `docker compose --profile load run --rm load`. Para mais gente: `-e STUDENTS=300`.
 - **Resultados** (2026-10-22, tudo no mesmo Mac com OrbStack, k6 incluso):
@@ -109,14 +109,13 @@ Nunca usar `npm` nem `yarn`, nem gerar `package-lock.json` ou `yarn.lock`.
 
 ## Docker
 
-- `docker-compose.yml` na raiz sobe a aplicação inteira (`docker compose up --build`). Tem `postgres`, `api` e `web`. A `api` só sobe depois do Postgres saudável (`depends_on` com `service_healthy`).
+- `docker-compose.yml` na raiz sobe a aplicação inteira (`docker compose up -d --build`): `postgres`, `api` e `web`. Para subir apenas o backend no servidor (com o `web` na Vercel), use `docker compose up -d --build api`, que inicia `postgres` e `api`. A `api` só sobe depois do Postgres saudável (`depends_on` com `service_healthy`).
 - `apps/web/Dockerfile` é multi-stage e usa a saída `standalone` do Next, então a imagem final não leva pnpm nem código-fonte. O contexto do build é a raiz do monorepo, por causa do lockfile e do workspace.
 - O healthcheck fica no compose e usa `node` + `fetch`, porque a imagem slim não tem curl. O do `web` também chama `/api/health` pelo rewrite, e o `web` só sobe depois da `api` saudável.
 - O `apps/web/Dockerfile` recebe `API_URL` como `ARG` (padrão `http://api:3001`), porque os rewrites do Next ficam fixos no build.
 - Rede lenta: o pnpm 11 confere cada item do lockfile no registro (a política de idade mínima) e baixa metadados completos (o do `prisma` tem 44 MB). Numa conexão de ~2 MB/s (2026-10-22), o `pnpm install` das imagens levou mais de 7 minutos e estourou o timeout padrão de 60 s por requisição. Por isso `fetchTimeout: 300000` (5 min) no `pnpm-workspace.yaml`: numa rede boa não muda nada, é só o teto.
-- `WEB_PORT`, `API_PORT` e `POSTGRES_PORT` definem as portas publicadas (padrão 3000, 3001 e 5432). Com `0`, o Docker escolhe uma porta livre (usado no CI).
-- `apps/api/Dockerfile` é multi-stage, mas a imagem final leva o `node_modules` inteiro de propósito: precisa do CLI do Prisma para aplicar as migrations ao subir.
-- O Jenkins é um serviço em `jenkins/docker-compose.yml`, incluído pelo compose da raiz com `profiles: ["jenkins"]` (ver [pipeline.md](pipeline.md)). Só sobe com `COMPOSE_PROFILES=jenkins` no `.env` da raiz.
+- `WEB_PORT`, `API_PORT` e `POSTGRES_PORT` definem as portas publicadas (padrão 3000, 3001 e 5432). `POSTGRES_BIND` prende o banco em `127.0.0.1` por padrão para não expor o Postgres na rede do servidor; `API_BIND` aceita `127.0.0.1` quando houver reverse proxy local.
+- `apps/api/Dockerfile` é multi-stage, mas a imagem final leva o `node_modules` inteiro de propósito: precisa do CLI do Prisma para aplicar as migrations ao subir (e usa `exec node dist/main.js` para o Node receber `SIGTERM` direto no shutdown).
 
 ## Deploy na Vercel
 

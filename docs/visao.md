@@ -1,15 +1,12 @@
 # Visão do projeto
 
-Projeto da disciplina **S107 - Gerência de Configuração e Evolução de Software**.
-O app é descartável: o objetivo real é praticar e testar um pipeline de CI/CD no **Jenkins**.
-
 ## O que é o Cathoot
 
 O **Cathoot** (nome definido em 2026-10-06) é o "Kahoot de tribunal de gato".
 
 Cada gato do catálogo tem nome, imagem meme e o "crime" cometido (arquivos em `apps/api/catalog/`), e a turma vota **Culpado** ou **Inocente**.
 
-Será usado numa votação em sala de aula na apresentação, então precisa ser divertido e funcionar bem com muita gente votando ao mesmo tempo.
+Feito para votações ao vivo em sala ou eventos, então precisa ser divertido e aguentar muita gente votando ao mesmo tempo.
 
 ## Fluxo do jogo
 
@@ -23,5 +20,5 @@ Fluxo E2E principal: criar sala → entrar → votar → ver o veredito.
 
 ## Princípios
 
-- Manter o app pequeno e simples (um CRUD basta).
-- Priorizar o que ajuda o pipeline: builds reproduzíveis, testes rápidos, imagens Docker e estágios claros.
+- Manter o app simples e rápido, com foco na experiência ao vivo.
+- Garantir builds reproduzíveis e testes confiáveis (unitários, integração, E2E e carga).

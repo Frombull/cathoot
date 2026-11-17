@@ -8,7 +8,6 @@ Registro de ideias em aberto e descartadas, para não rediscutir o que já foi d
 - Supertest
 - SonarQube
 - Trivy
-- Webhook do GitHub (hoje é periodic scan; precisaria de ngrok ou smee.io para alcançar o Jenkins local)
 - Gatinho correndo pela tela, só como efeito visual (emoji ou uma sprite sheet única)
 
 ## Descartadas

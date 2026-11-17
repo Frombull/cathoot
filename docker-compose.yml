@@ -1,18 +1,18 @@
+# App completo (local):      docker compose up -d --build
+# Só backend + banco (srv):  docker compose up -d --build api
 name: cathoot
-
-include:
-  - jenkins/docker-compose.yml
 
 services:
   postgres:
     image: postgres:17.6-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: cathoot
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cathoot}
       POSTGRES_DB: cathoot
     ports:
-      # POSTGRES_PORT=0: porta aleatória (usado no Jenkins)
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Padrão preso em localhost para o banco não ficar exposto na rede do servidor
+      - "${POSTGRES_BIND:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -25,12 +25,13 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://cathoot:${POSTGRES_PASSWORD:-cathoot}@postgres:5432/cathoot
       PRESENTER_PASSWORD: ${PRESENTER_PASSWORD:-miau}
     ports:
-      # API_PORT=0: porta aleatória (usado no Jenkins)
-      - "${API_PORT:-3001}:3001"
+      # Com reverse proxy na mesma máquina, defina API_BIND=127.0.0.1 no .env
+      - "${API_BIND:-0.0.0.0}:${API_PORT:-3001}:3001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,8 +46,8 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
     ports:
-      # WEB_PORT=0: porta aleatória (usado no Jenkins)
       - "${WEB_PORT:-3000}:3000"
     depends_on:
       api:
